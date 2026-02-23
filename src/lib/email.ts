@@ -12,16 +12,39 @@ export interface ContactEmailData {
 
 // ─── Transport ───────────────────────────────────────────────────────────────
 
+// How long (ms) to wait for each SMTP phase before giving up
+const SMTP_TIMEOUT_MS = 10_000;
+// Hard ceiling for the entire send operation
+const SEND_TIMEOUT_MS = 15_000;
+
 function createTransporter() {
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // SSL
+    port: 587, // STARTTLS – widely allowed; port 465 (implicit SSL) is often blocked
+    secure: false, // false = start plain, then upgrade via STARTTLS
+    requireTLS: true, // abort if the server doesn't offer STARTTLS
     auth: {
       user: process.env.CONTACT_SMTP_USER,
       pass: process.env.CONTACT_SMTP_PASS,
     },
+    // These prevent indefinite hangs when Gmail is slow or credentials are wrong
+    connectionTimeout: SMTP_TIMEOUT_MS, // TCP connect
+    greetingTimeout: SMTP_TIMEOUT_MS, // SMTP 220 banner
+    socketTimeout: SMTP_TIMEOUT_MS, // idle socket read
   });
+}
+
+/** Rejects after `ms` milliseconds with a clear error message. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Email send timed out after ${ms / 1000}s`)),
+        ms,
+      ),
+    ),
+  ]);
 }
 
 // ─── HTML Sanitiser ──────────────────────────────────────────────────────────
@@ -92,7 +115,6 @@ function generateDarkEmailHtml(
                 <div style="background:#0b1220;border-radius:10px;padding:10px 24px;">
                   <span style="font-size:13px;font-weight:700;letter-spacing:2px;
                                text-transform:uppercase;
-                               background:linear-gradient(135deg,#3b82f6,#22d3ee);
                                -webkit-background-clip:text;
                                -webkit-text-fill-color:transparent;
                                color:#3b82f6;">
@@ -117,7 +139,7 @@ function generateDarkEmailHtml(
                               padding:24px 32px;
                               border-bottom:1px solid #1e293b;">
                     <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;
-                               text-transform:uppercase;color:#1e293b;">
+                               text-transform:uppercase;color:#d7d9db;">
                       New Message
                     </p>
                     <h1 style="margin:6px 0 0;font-size:20px;font-weight:700;color:#e5e7eb;
@@ -261,29 +283,48 @@ function generateDarkEmailHtml(
 // ─── Main send function ───────────────────────────────────────────────────────
 
 export async function sendContactEmail(data: ContactEmailData): Promise<void> {
-  const tehranTime = new Intl.DateTimeFormat("en-GB", {
+  const now = new Date();
+
+  // Jalali (Shamsi) date with Persian numerals – e.g. "۴ اسفند ۱۴۰۴"
+  const jalaliDate = new Intl.DateTimeFormat("fa-IR", {
     timeZone: "Asia/Tehran",
     year: "numeric",
     month: "long",
     day: "numeric",
+    calendar: "persian",
+  }).format(now);
+
+  // Time in 24-hour format – e.g. "۱۷:۴۰:۱۵"
+  const jalaliTime = new Intl.DateTimeFormat("fa-IR", {
+    timeZone: "Asia/Tehran",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-  }).format(new Date());
+  }).format(now);
+
+  const tehranTime = `${jalaliDate}  ساعت ${jalaliTime}`;
+
+  // Fail fast if credentials are not configured
+  if (!process.env.CONTACT_SMTP_USER || !process.env.CONTACT_SMTP_PASS) {
+    throw new Error("SMTP credentials are not configured.");
+  }
 
   const transporter = createTransporter();
 
   const fromName = process.env.CONTACT_FROM_NAME ?? "Omid Portfolio";
-  const fromAddr = process.env.CONTACT_SMTP_USER ?? "";
+  const fromAddr = process.env.CONTACT_SMTP_USER;
   const toAddr = process.env.CONTACT_TO ?? fromAddr;
 
-  await transporter.sendMail({
-    from: `"${fromName}" <${fromAddr}>`,
-    to: toAddr,
-    replyTo: `"${escapeHtml(data.name)}" <${data.email}>`,
-    subject: `New message from ${data.name} — Portfolio`,
-    text: generatePlainText(data, tehranTime),
-    html: generateDarkEmailHtml(data, tehranTime),
-  });
+  await withTimeout(
+    transporter.sendMail({
+      from: `"${fromName}" <${fromAddr}>`,
+      to: toAddr,
+      replyTo: `"${escapeHtml(data.name)}" <${data.email}>`,
+      subject: `New message from ${data.name} — Portfolio`,
+      text: generatePlainText(data, tehranTime),
+      html: generateDarkEmailHtml(data, tehranTime),
+    }),
+    SEND_TIMEOUT_MS,
+  );
 }
