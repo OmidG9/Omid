@@ -2170,7 +2170,8 @@
   }
 }
 @keyframes gradientDrift {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) translate(0, 0);
     filter: blur(80px) hue-rotate(0deg);
   }
@@ -2184,7 +2185,8 @@
   }
 }
 @keyframes gradientDriftAlt {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) translate(0, 0);
     filter: blur(100px) hue-rotate(0deg);
   }

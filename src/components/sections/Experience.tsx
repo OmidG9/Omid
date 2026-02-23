@@ -13,7 +13,7 @@ export default function Experience() {
 
   useEffect(() => {
     const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
     if (prefersReduced) return;
 
@@ -39,13 +39,12 @@ export default function Experience() {
                 end: "bottom 75%",
                 scrub: 0.6,
               },
-            }
+            },
           );
         }
 
         // Animate each timeline card
-        const items =
-          timelineRef.current?.querySelectorAll(".experience-item");
+        const items = timelineRef.current?.querySelectorAll(".experience-item");
         if (items && items.length > 0) {
           gsap.fromTo(
             items,
@@ -60,7 +59,7 @@ export default function Experience() {
                 trigger: timelineRef.current,
                 start: "top 82%",
               },
-            }
+            },
           );
         }
 
@@ -80,7 +79,7 @@ export default function Experience() {
                 trigger: timelineRef.current,
                 start: "top 82%",
               },
-            }
+            },
           );
         }
       }, timelineRef);

@@ -42,7 +42,10 @@ export default function Hero() {
       aria-label="معرفی"
     >
       {/* Background gradient circles — extend into About section */}
-      <div className="absolute inset-0 pointer-events-none overflow-visible" aria-hidden="true">
+      <div
+        className="absolute inset-0 pointer-events-none overflow-visible"
+        aria-hidden="true"
+      >
         <div className="absolute inset-0 bg-slate-950" />
         {/* Circle 1 — large top-center blue */}
         <div

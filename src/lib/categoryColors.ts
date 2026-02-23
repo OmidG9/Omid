@@ -51,4 +51,5 @@ export const CATEGORY_COLORS: Record<string, CategoryStyle> = {
 
 /** Returns category color style, with "Full-Stack" as fallback. */
 export function getCategoryStyle(category: string): CategoryStyle {
-  return CATEGORY_COLORS[category] ?? CATEGORY_COLORS["
+  return CATEGORY_COLORS[category] ?? CATEGORY_COLORS["Full-Stack"];
+}

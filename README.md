@@ -120,11 +120,11 @@ src/data/portfolio.ts
 
 Each project card and detail page renders a **"دموی زنده"** button:
 
-| State | Behaviour |
-|---|---|
-| `demoUrl` present + `demoType: 'link'` | Opens the URL in a new tab |
+| State                                   | Behaviour                            |
+| --------------------------------------- | ------------------------------------ |
+| `demoUrl` present + `demoType: 'link'`  | Opens the URL in a new tab           |
 | `demoUrl` present + `demoType: 'embed'` | Renders an `<iframe>` in the sidebar |
-| `demoUrl` absent | Disabled button + Persian tooltip |
+| `demoUrl` absent                        | Disabled button + Persian tooltip    |
 
 ### To add an iframe embed demo:
 
@@ -149,6 +149,7 @@ const { Icon, color, name } = TECH_MAP["React"];
 ### To add a new technology:
 
 1. Create an SVG component in `TechIcons.tsx`:
+
 ```typescript
 export const MyTechIcon = ({ className, style }: IconProps) => (
   <svg className={className} style={style} viewBox="0 0 24 24" ...>
@@ -158,6 +159,7 @@ export const MyTechIcon = ({ className, style }: IconProps) => (
 ```
 
 2. Register it in `TECH_MAP`:
+
 ```typescript
 "My Tech": { name: "My Tech", Icon: MyTechIcon, color: "#HEXCOLOR" },
 ```
@@ -170,12 +172,12 @@ export const MyTechIcon = ({ className, style }: IconProps) => (
 
 Category colors are centralised in `src/lib/categoryColors.ts`:
 
-| Category | Colour |
-|---|---|
-| Full-Stack | Blue |
-| Frontend | Cyan / Sky |
-| UI/UX | Violet / Purple |
-| WordPress | Indigo |
+| Category   | Colour          |
+| ---------- | --------------- |
+| Full-Stack | Blue            |
+| Frontend   | Cyan / Sky      |
+| UI/UX      | Violet / Purple |
+| WordPress  | Indigo          |
 
 Used by filter chips in `Projects.tsx`, tag badges in `ProjectCard.tsx`, and the detail page.
 
@@ -209,18 +211,17 @@ Place your PDF at `public/resume.pdf`. The navbar button links to it automatical
 
 ## 🎨 Color Palette
 
-| Token | Value | Usage |
-|---|---|---|
-| Background | `#020617` slate-950 | Page background |
-| Surface | `#0f172a` slate-900 | Cards |
-| Accent | `#3b82f6` blue-500 | Buttons, highlights |
-| Text primary | `#f1f5f9` slate-100 | Headings |
-| Text muted | `#94a3b8` slate-400 | Body |
+| Token        | Value               | Usage               |
+| ------------ | ------------------- | ------------------- |
+| Background   | `#020617` slate-950 | Page background     |
+| Surface      | `#0f172a` slate-900 | Cards               |
+| Accent       | `#3b82f6` blue-500  | Buttons, highlights |
+| Text primary | `#f1f5f9` slate-100 | Headings            |
+| Text muted   | `#94a3b8` slate-400 | Body                |
 
 ---
 
 Built with Next.js 14 · TypeScript · TailwindCSS · Framer Motion · GSAP
-
 
 ---
 

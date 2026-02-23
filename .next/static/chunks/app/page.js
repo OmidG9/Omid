@@ -3791,4 +3791,7 @@ eval(__webpack_require__.ts("__webpack_require__.r(__webpack_exports__);\n/* har
 /******/ function(__webpack_require__) { // webpackRuntimeModules
 /******/ var __webpack_exec__ = function(moduleId) { return __webpack_require__(__webpack_require__.s = moduleId); }
 /******/ __webpack_require__.O(0, ["main-app"], function() { return __webpack_exec__("(app-pages-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-client-entry-loader.js?modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Clayout%5C%5CNavbar.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Csections%5C%5CAbout.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Csections%5C%5CContact.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Csections%5C%5CExperience.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Csections%5C%5CHero.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Csections%5C%5CProjects.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&modules=%7B%22request%22%3A%22D%3A%5C%5CWork%5C%5COmid%5C%5Csrc%5C%5Ccomponents%5C%5Csections%5C%5CSkills.tsx%22%2C%22ids%22%3A%5B%22default%22%5D%7D&server=false!"); });
-/******/ var __webpack_exports__ = __webpack_re
+/******/ var __webpack_exports__ = __webpack_require__.O();
+/******/ _N_E = __webpack_exports__;
+/******/ }
+]);

@@ -95,7 +95,10 @@ export default function About() {
                       color: info.color,
                     }}
                   >
-                    <Icon className="w-4 h-4 shrink-0" style={{ color: info.color }} />
+                    <Icon
+                      className="w-4 h-4 shrink-0"
+                      style={{ color: info.color }}
+                    />
                     <span className="leading-none">{info.name}</span>
                   </motion.div>
                 );
