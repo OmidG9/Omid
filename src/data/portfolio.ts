@@ -1,0 +1,360 @@
+export interface Social {
+  platform: string;
+  url: string;
+  label: string;
+}
+
+export interface Skill {
+  name: string;
+  level?: number;
+}
+
+export interface SkillCategory {
+  name: string;
+  icon: string;
+  skills: Skill[];
+}
+
+export interface ExperienceBullet {
+  text: string;
+}
+
+export interface Experience {
+  company: string;
+  role: string;
+  period: string;
+  type: string;
+  bullets: string[];
+  current?: boolean;
+}
+
+export interface ProjectImage {
+  src: string;
+  alt: string;
+}
+
+export interface Project {
+  slug: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  longDescription: string;
+  stack: string[];
+  category: string[];
+  coverImage: string;
+  images: ProjectImage[];
+  liveUrl?: string;
+  githubUrl?: string;
+  features: string[];
+}
+
+export interface PortfolioData {
+  name: string;
+  nameEn: string;
+  title: string;
+  titleEn: string;
+  location: string;
+  email: string;
+  telegram: string;
+  availability: string;
+  summary: string;
+  heroValue: string;
+  socials: Social[];
+  stats: { label: string; value: string }[];
+  techBadges: string[];
+  skillCategories: SkillCategory[];
+  experiences: Experience[];
+  projects: Project[];
+}
+
+const portfolio: PortfolioData = {
+  name: "امید قنبری",
+  nameEn: "Omid Ghanbari",
+  title: "توسعه‌دهنده فول‌استک",
+  titleEn: "Full-Stack Web Developer (Node.js | React | Next.js)",
+  location: "تهران، ایران",
+  email: "omidghanbari@example.com", // TODO: update with real email
+  telegram: "https://t.me/hope3179",
+  availability: "Open to opportunities",
+  summary:
+    "توسعه‌دهنده فول‌استک با رویکرد محصول‌محور، با تجربه در ساخت اپلیکیشن‌های سازمانی، داشبوردهای Real-Time و پروژه‌های مقیاس‌پذیر. به کار تیمی، یادگیری مداوم و تحویل سریع اهمیت زیادی می‌دهم. از ابزارهای هوش مصنوعی برای افزایش سرعت و کیفیت توسعه استفاده می‌کنم.",
+  heroValue:
+    "توسعه‌دهنده فول‌استک با تمرکز بر توسعه محصول، کار تیمی و تحویل سریع.\nتجربه توسعه داشبوردهای Real-Time و پروژه‌های سازمانی.",
+  socials: [
+    {
+      platform: "GitHub",
+      url: "https://github.com/OmidG9",
+      label: "GitHub Profile",
+    },
+    {
+      platform: "LinkedIn",
+      url: "https://linkedin.com/in/USERNAME", // TODO: update with real LinkedIn
+      label: "LinkedIn Profile",
+    },
+    {
+      platform: "Telegram",
+      url: "https://t.me/hope3179",
+      label: "Telegram Contact",
+    },
+  ],
+  stats: [
+    { value: "۵۰۰۰+", label: "کاربر فعال (IQDuel)" },
+    { value: "۱۲s → ۳s", label: "بهبود زمان لود" },
+    { value: "۴+", label: "پروژه سازمانی" },
+  ],
+  techBadges: [
+    "Node.js",
+    "Express",
+    "React",
+    "Next.js",
+    "TypeScript",
+    "MongoDB",
+    "PostgreSQL",
+    "TailwindCSS",
+    "WebSocket",
+    "Leaflet",
+    "JWT",
+    "Linux",
+    "Nginx",
+    "Git",
+    "Figma",
+  ],
+  skillCategories: [
+    {
+      name: "Backend",
+      icon: "server",
+      skills: [
+        { name: "Node.js" },
+        { name: "Express.js" },
+        { name: "MongoDB" },
+        { name: "PostgreSQL" },
+        { name: "JWT & Auth" },
+        { name: "REST API" },
+      ],
+    },
+    {
+      name: "Frontend",
+      icon: "monitor",
+      skills: [
+        { name: "React" },
+        { name: "Next.js" },
+        { name: "TailwindCSS" },
+        { name: "JavaScript ES6+" },
+        { name: "TypeScript" },
+      ],
+    },
+    {
+      name: "Real-time & Maps",
+      icon: "map",
+      skills: [
+        { name: "WebSocket" },
+        { name: "Socket.io" },
+        { name: "Leaflet.js" },
+        { name: "Real-Time Dashboard" },
+      ],
+    },
+    {
+      name: "DevOps",
+      icon: "terminal",
+      skills: [
+        { name: "Linux" },
+        { name: "Nginx" },
+        { name: "Server Deployment" },
+        { name: "PM2" },
+      ],
+    },
+    {
+      name: "Tools & Design",
+      icon: "tool",
+      skills: [
+        { name: "Git / GitHub" },
+        { name: "Figma" },
+        { name: "Postman" },
+        { name: "WordPress" },
+      ],
+    },
+  ],
+  experiences: [
+    {
+      company: "تجارت الکترونیک آرون پایدار",
+      role: "Full-Stack Developer",
+      period: "۱۳۹۸ – ۱۴۰۴",
+      type: "Full-time",
+      current: true,
+      bullets: [
+        "مشارکت در توسعه و نگهداری ۴+ پروژه سازمانی مانند آموزینو و سمفا",
+        "بهبود Performance از ~70% به ~95% و کاهش زمان لود صفحه از ۱۲ ثانیه به ۳ ثانیه",
+        "طراحی و پیاده‌سازی API های RESTful با Node.js و Express",
+        "استقرار پروژه‌ها روی سرور Linux و پیکربندی Nginx به عنوان Reverse Proxy",
+        "همکاری با تیم‌های طراحی، محصول و QA در محیط Agile",
+      ],
+    },
+    {
+      company: "هواپیمایی آتا – TraTicket",
+      role: "UI/UX Designer",
+      period: "۱۴۰۱",
+      type: "Contract",
+      current: false,
+      bullets: [
+        "طراحی رابط کاربری صفحه خرید بلیط هواپیما با هماهنگی تیم ~۲۵ نفره",
+        "ایجاد راهنمای طراحی (Design System) و Component Library در Figma",
+        "انجام User Research و بهبود تجربه کاربری فرآیند رزرو بلیط",
+      ],
+    },
+    {
+      company: "IQDuel",
+      role: "Front-End Developer",
+      period: "۱۴۰۲",
+      type: "Contract",
+      current: false,
+      bullets: [
+        "توسعه داشبورد مدیریتی با Next.js برای پلتفرم با ۵۰۰۰+ کاربر فعال",
+        "پیاده‌سازی ارتباط Real-Time با WebSocket برای آمار و اتفاقات لحظه‌ای",
+        "همکاری با تیم Back-End و DevOps در تیمی ~۵۰ نفره",
+        "ادغام با PostgreSQL و MongoDB برای نمایش داده‌های پیچیده",
+      ],
+    },
+  ],
+  projects: [
+    {
+      slug: "nakhsha",
+      title: "نقشه (Nakhsha)",
+      subtitle: "پلتفرم مکان‌محور MVP",
+      description: "پلتفرم MVP برای نمایش و مدیریت مکان‌ها با نقشه تعاملی",
+      longDescription:
+        "نقشه یک پلتفرم مکان‌محور Full-Stack است که با Node.js، Express و MongoDB در Back-End و React در Front-End ساخته شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشه Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و API های RESTful کامل طراحی شده‌اند.",
+      stack: [
+        "Node.js",
+        "Express",
+        "MongoDB",
+        "React",
+        "Leaflet.js",
+        "JWT",
+        "OTP",
+      ],
+      category: ["Full-Stack"],
+      coverImage: "/projects/nakhsha/cover.jpg",
+      images: [
+        { src: "/projects/nakhsha/cover.jpg", alt: "نمای کلی نقشه" },
+        { src: "/projects/nakhsha/map-view.jpg", alt: "نمای نقشه" },
+        { src: "/projects/nakhsha/dashboard.jpg", alt: "داشبورد" },
+      ],
+      liveUrl: "",
+      githubUrl: "",
+      features: [
+        "احراز هویت با JWT و OTP",
+        "نقشه تعاملی با Leaflet.js",
+        "CRUD کامل برای مکان‌ها",
+        "REST API کامل با Express",
+        "آپلود تصویر برای مکان‌ها",
+      ],
+    },
+    {
+      slug: "iqduel-dashboard",
+      title: "IQDuel Dashboard",
+      subtitle: "داشبورد Real-Time مدیریتی",
+      description: "داشبورد مدیریتی Real-Time برای بازی رقابتی با ۵۰۰۰+ کاربر",
+      longDescription:
+        "داشبورد مدیریتی پلتفرم IQDuel با Next.js و TypeScript ساخته شده. با WebSocket اطلاعات بازی‌ها، کاربران و تراکنش‌ها به صورت Real-Time نمایش داده می‌شوند. داده از PostgreSQL و MongoDB ترکیب شده و در قالب چارت‌های تعاملی به ادمین‌ها نمایش داده می‌شود.",
+      stack: [
+        "Next.js",
+        "TypeScript",
+        "WebSocket",
+        "PostgreSQL",
+        "MongoDB",
+        "TailwindCSS",
+      ],
+      category: ["Frontend", "Full-Stack"],
+      coverImage: "/projects/iqduel-dashboard/cover.jpg",
+      images: [
+        { src: "/projects/iqduel-dashboard/cover.jpg", alt: "داشبورد IQDuel" },
+        {
+          src: "/projects/iqduel-dashboard/realtime.jpg",
+          alt: "آمار Real-Time",
+        },
+      ],
+      liveUrl: "",
+      githubUrl: "",
+      features: [
+        "آمار Real-Time با WebSocket",
+        "مدیریت کاربران و مسابقه‌ها",
+        "نمودارهای تعاملی",
+        "دسترسی نقش‌محور (RBAC)",
+        "گزارش‌گیری و Export",
+      ],
+    },
+    {
+      slug: "traticket",
+      title: "TraTicket – آتا",
+      subtitle: "طراحی UI/UX خرید بلیط هواپیما",
+      description: "طراحی رابط کاربری صفحه رزرو و خرید بلیط هواپیمایی آتا",
+      longDescription:
+        "در این پروژه به عنوان UI/UX Designer در تیم ~۲۵ نفره هواپیمایی آتا مشارکت داشتم. هدف اصلی طراحی مجدد فرآیند خرید بلیط با تجربه کاربری بهتر بود. Wireframe، Prototype تعاملی و Design System کامل در Figma ارائه شد.",
+      stack: ["Figma", "UI/UX", "Design System", "Prototyping"],
+      category: ["UI/UX"],
+      coverImage: "/projects/traticket/cover.jpg",
+      images: [
+        { src: "/projects/traticket/cover.jpg", alt: "TraTicket Cover" },
+        { src: "/projects/traticket/wireframe.jpg", alt: "Wireframes" },
+      ],
+      liveUrl: "",
+      githubUrl: "",
+      features: [
+        "طراحی فرآیند خرید ۳ مرحله‌ای",
+        "Design System در Figma",
+        "Responsive Design",
+        "Prototype تعاملی",
+        "User Research و Usability Testing",
+      ],
+    },
+    {
+      slug: "aroon-paydar",
+      title: "آرون پایدار",
+      subtitle: "وبسایت سازمانی",
+      description: "طراحی و توسعه وبسایت سازمانی شرکت آرون پایدار با WordPress",
+      longDescription:
+        "وبسایت معرفی شرکت تجارت الکترونیک آرون پایدار با WordPress طراحی و پیاده‌سازی شده. شامل صفحات خدمات، نمونه کار، وبلاگ و فرم تماس است. سئو و بهینه‌سازی Performance از اولویت‌های اصلی بود.",
+      stack: ["WordPress", "PHP", "CSS", "SEO"],
+      category: ["WordPress"],
+      coverImage: "/projects/aroon-paydar/cover.jpg",
+      images: [
+        { src: "/projects/aroon-paydar/cover.jpg", alt: "وبسایت آرون پایدار" },
+      ],
+      liveUrl: "",
+      githubUrl: "",
+      features: [
+        "طراحی Custom Theme",
+        "بهینه‌سازی SEO",
+        "پنل مدیریت محتوا",
+        "فرم‌های تماس و استعلام",
+        "Performance Optimization",
+      ],
+    },
+    {
+      slug: "amoozino",
+      title: "آموزینو",
+      subtitle: "پلتفرم آموزش آنلاین",
+      description: "بهبود عملکرد و UI/UX پلتفرم آنلاین آموزشی آموزینو",
+      longDescription:
+        "در پروژه آموزینو مسئول بهبود Performance و UI/UX بودم. زمان لود از ۱۲ ثانیه به ۳ ثانیه کاهش یافت و Lighthouse Score از ~۷۰% به ~۹۵% رسید. بهینه‌سازی تصاویر، Lazy Loading و Caching استراتژی‌های اصلی بودند.",
+      stack: ["WordPress", "UI/UX", "Performance", "SEO", "Figma"],
+      category: ["WordPress", "UI/UX"],
+      coverImage: "/projects/amoozino/cover.jpg",
+      images: [
+        { src: "/projects/amoozino/cover.jpg", alt: "آموزینو" },
+        { src: "/projects/amoozino/performance.jpg", alt: "نتایج Performance" },
+      ],
+      liveUrl: "",
+      githubUrl: "",
+      features: [
+        "بهبود Performance از 70% به 95%",
+        "کاهش زمان لود از ۱۲s به ۳s",
+        "بازطراحی UI دوره‌ها و پروفایل",
+        "بهینه‌سازی SEO",
+        "Lazy Loading و Image Optimization",
+      ],
+    },
+  ],
+};
+
+export default portfolio;
