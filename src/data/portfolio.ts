@@ -222,12 +222,12 @@ const portfolio: PortfolioData = {
   projects: [
     {
       slug: "nakhsha",
-      title: "نقشه (Nakhsha)",
+      title: "نخشا (Nakhsha)",
       subtitle: "پلتفرم مکان‌محور MVP",
       description:
-        "پلتفرم مکان‌محور Full-Stack؛ پروژهٔ MVP با نقشهٔ تعاملی Leaflet، سیستم احراز هویت JWT/OTP و ۱۰۰ محصول آزمایشی",
+        "پلتفرم مکان‌محور Full-Stack؛ پروژهٔ MVP با نقشه تعاملی Leaflet، سیستم احراز هویت JWT/OTP و ۱۰۰ محصول آزمایشی",
       longDescription:
-        "نقشه یک پلتفرم مکان‌محور Full-Stack است که به‌عنوان MVP توسعه یافته. با Node.js، Express و MongoDB در Back-End و React در Front-End پیاده‌سازی شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشهٔ Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و APIهای RESTful کامل طراحی شده‌اند. در مرحلهٔ MVP با ۱۰۰ محصول آزمایشی راه‌اندازی شد.",
+        "نخشا یک پلتفرم مکان‌محور Full-Stack است که به‌عنوان MVP توسعه یافته. با Node.js، Express و MongoDB در Back-End و React در Front-End پیاده‌سازی شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشه Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و APIهای RESTful کامل طراحی شده‌اند. در مرحلهٔ MVP با ۱۰۰ محصول آزمایشی راه‌اندازی شد.",
       stack: [
         "Node.js",
         "Express",
@@ -240,8 +240,8 @@ const portfolio: PortfolioData = {
       category: ["Full-Stack"],
       coverImage: "/projects/nakhsha/cover.jpg",
       images: [
-        { src: "/projects/nakhsha/cover.jpg", alt: "نمای کلی نقشه" },
-        { src: "/projects/nakhsha/map-view.jpg", alt: "نمای نقشه" },
+        { src: "/projects/nakhsha/cover.jpg", alt: "نمای کلی نخشا" },
+        { src: "/projects/nakhsha/map-view.jpg", alt: "نمای نخشا" },
         { src: "/projects/nakhsha/dashboard.jpg", alt: "داشبورد" },
       ],
       liveUrl: "",
