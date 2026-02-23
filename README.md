@@ -34,7 +34,46 @@ npm start
 
 ---
 
-## 📁 Project Structure
+## � Contact Form – Email Setup
+
+The contact form sends real emails via **Gmail SMTP + Nodemailer**.
+
+### 1. Create a Gmail App Password
+
+> You need 2-Step Verification enabled on your Google account first.
+
+1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+2. Select **Mail** as the app and **Other** as the device (enter "Portfolio")
+3. Click **Generate** – copy the 16-character password shown
+
+### 2. Configure Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your credentials:
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+CONTACT_SMTP_USER=omid.ghanbari.1399@gmail.com
+CONTACT_SMTP_PASS=xxxx xxxx xxxx xxxx   # paste your App Password here
+CONTACT_TO=omid.ghanbari.1399@gmail.com
+CONTACT_FROM_NAME=Omid Portfolio
+```
+
+> **Never commit `.env.local`** – it is already listed in `.gitignore`.
+
+### 3. Test Locally
+
+```bash
+npm run dev
+# Open http://localhost:3000, scroll to Contact, fill the form and submit.
+# Check your inbox at CONTACT_TO.
+```
+
+---
+
+## �📁 Project Structure
 
 ```
 src/

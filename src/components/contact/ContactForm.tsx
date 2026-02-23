@@ -23,19 +23,19 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        // company is the honeypot field – always empty for real users
+        body: JSON.stringify({ ...data, company: "" }),
       });
       const json = await res.json();
 
-      if (json.success) {
+      if (json.ok) {
         setSuccess(true);
         reset();
-        toast.success("پیام شما با موفقیت ارسال شد!");
       } else {
-        toast.error(json.message || "خطایی رخ داد، دوباره تلاش کنید.");
+        toast.error("ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.");
       }
     } catch {
-      toast.error("اتصال به سرور برقرار نشد.");
+      toast.error("ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.");
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +50,9 @@ export default function ContactForm() {
         <h3 className="text-xl font-bold text-slate-100 mb-2">
           پیام ارسال شد!
         </h3>
-        <p className="text-slate-400 mb-6">به زودی با شما تماس می‌گیریم.</p>
+        <p className="text-slate-400 mb-6">
+          پیام شما با موفقیت ارسال شد. به‌زودی پاسخ می‌دهم.
+        </p>
         <button onClick={() => setSuccess(false)} className="btn-secondary">
           ارسال پیام جدید
         </button>
@@ -145,6 +147,16 @@ export default function ContactForm() {
           </p>
         )}
       </div>
+
+      {/* Honeypot – hidden from real users, traps bots */}
+      <input
+        type="text"
+        name="company"
+        aria-hidden="true"
+        tabIndex={-1}
+        autoComplete="off"
+        style={{ display: "none" }}
+      />
 
       <button
         type="submit"

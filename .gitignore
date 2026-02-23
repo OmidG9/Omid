@@ -19,7 +19,7 @@ dist/
 .env.test.local
 .env.production.local
 .env*.local
-
+.env.example
 # Vercel
 .vercel
 
@@ -63,3 +63,4 @@ desktop.ini
 
 # Debug
 .pnpm-debug.log*
+
