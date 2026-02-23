@@ -12,7 +12,7 @@
   --color-accent-light: #60a5fa;
   --color-highlight: #22d3ee;
 
-  --font-sans: var(--font-vazirmatn), system-ui, sans-serif;
+  --font-sans: "Vazirmatn", system-ui, sans-serif;
 }
 
 @layer base {
@@ -28,7 +28,7 @@
   body {
     background-color: #020617;
     color: #f1f5f9;
-    font-family: var(--font-vazirmatn), system-ui, sans-serif;
+    font-family: "Vazirmatn", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;

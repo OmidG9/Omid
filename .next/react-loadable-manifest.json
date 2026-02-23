@@ -1,1 +1,15 @@
-{}
+{
+  "components\\sections\\Experience.tsx -> gsap": {
+    "id": 6498,
+    "files": [
+      "static/chunks/c15bf2b0.7a75e897b50469a8.js",
+      "static/chunks/498.d8aa956d0c5e6ba5.js"
+    ]
+  },
+  "components\\sections\\Experience.tsx -> gsap/ScrollTrigger": {
+    "id": 9498,
+    "files": [
+      "static/chunks/84.add2e29efabd99d7.js"
+    ]
+  }
+}

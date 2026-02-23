@@ -1,5 +1,0 @@
-Omid Ghanbari - Resume Placeholder
-
-Replace this file with your actual resume PDF.
-File must be named: resume.pdf
-Location: /public/resume.pdf
