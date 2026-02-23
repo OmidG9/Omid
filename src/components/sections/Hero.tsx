@@ -80,7 +80,7 @@ export default function Hero() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 pt-24 pb-16">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -101,7 +101,7 @@ export default function Hero() {
           {/* Name */}
           <motion.h1
             variants={itemVariants}
-            className="text-5xl md:text-7xl font-bold text-slate-100 mb-4 tracking-tight"
+            className="text-4xl sm:text-5xl md:text-7xl font-bold text-slate-100 mb-4 tracking-tight"
           >
             {portfolio.nameEn}
           </motion.h1>
@@ -133,13 +133,19 @@ export default function Hero() {
           {/* CTA Buttons */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-wrap items-center justify-center gap-4 mb-10"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10 w-full sm:w-auto"
           >
-            <a href="#projects" className="btn-primary text-base px-8 py-3">
+            <a
+              href="#projects"
+              className="btn-primary text-base px-8 py-3 w-full sm:w-auto justify-center"
+            >
               <Briefcase size={18} />
               مشاهده پروژه‌ها
             </a>
-            <a href="#contact" className="btn-secondary text-base px-8 py-3">
+            <a
+              href="#contact"
+              className="btn-secondary text-base px-8 py-3 w-full sm:w-auto justify-center"
+            >
               تماس با من
             </a>
           </motion.div>

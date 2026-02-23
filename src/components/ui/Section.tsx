@@ -30,7 +30,7 @@ export default function Section({
       whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
       variants={sectionVariants}
-      className={`py-20 md:py-28 ${className}`}
+      className={`py-16 sm:py-20 ${className}`}
     >
       {children}
     </motion.section>

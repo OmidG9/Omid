@@ -20,7 +20,7 @@ export default function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <motion.div
-      className={`mb-14 ${center ? "text-center" : ""}`}
+      className={`mb-8 ${center ? "text-center" : ""}`}
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}

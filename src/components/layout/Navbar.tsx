@@ -56,7 +56,7 @@ export default function Navbar() {
           : "bg-transparent"
       }`}
     >
-      <nav className="max-w-6xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
@@ -145,7 +145,7 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="md:hidden bg-slate-950/95 backdrop-blur-md"
           >
-            <div className="px-6 py-4 flex flex-col gap-1">
+            <div className="px-4 sm:px-6 py-4 flex flex-col gap-1">
               {navLinks.map((link) => (
                 <a
                   key={link.href}

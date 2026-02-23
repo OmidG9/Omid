@@ -38,7 +38,7 @@ export default function About() {
       {/* Subtle top separator */}
       <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-slate-700/40 to-transparent" />
       <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           {/* ── Left column: text + KPI stats ── */}
           <div dir="rtl">
             <SectionHeader
@@ -75,7 +75,7 @@ export default function About() {
             <p className="text-sm font-semibold text-slate-400 mb-5 uppercase tracking-wider text-right">
               تکنولوژی‌هایی که استفاده می‌کنم
             </p>
-            <div className="flex flex-wrap gap-2.5 justify-end">
+            <div className="flex flex-wrap gap-2.5 justify-start sm:justify-end">
               {FEATURED_TECHS.map((tech, i) => {
                 const info = TECH_MAP[tech];
                 if (!info) return null;

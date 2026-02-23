@@ -107,7 +107,7 @@ export default function Experience() {
             className="absolute right-4.5 md:right-1/2 top-0 bottom-0 w-px bg-linear-to-b from-blue-500/60 via-slate-700/40 to-transparent"
           />
 
-          <div className="space-y-10">
+          <div className="space-y-8">
             {portfolio.experiences.map((exp, i) => (
               <div
                 key={i}

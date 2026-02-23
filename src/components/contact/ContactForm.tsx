@@ -61,7 +61,7 @@ export default function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="glass-card p-6 space-y-5"
+      className="glass-card p-4 sm:p-6 space-y-5"
       dir="rtl"
       noValidate
     >

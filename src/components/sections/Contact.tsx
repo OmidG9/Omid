@@ -55,8 +55,8 @@ export default function Contact() {
           <motion.div
             className="space-y-6"
             dir="rtl"
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
@@ -92,7 +92,7 @@ export default function Contact() {
               <p className="text-sm font-medium text-slate-400 mb-4 uppercase tracking-wider">
                 شبکه‌های اجتماعی
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 {socialLinks.map(({ icon: Icon, label, href }) => (
                   <a
                     key={label}
@@ -125,8 +125,8 @@ export default function Contact() {
 
           {/* Right: Form */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >

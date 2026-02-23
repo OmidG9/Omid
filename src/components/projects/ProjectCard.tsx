@@ -28,7 +28,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
       className="group glass-card overflow-hidden flex flex-col hover:border-blue-500/40 hover:shadow-glow transition-all duration-300"
     >
       {/* Cover image placeholder */}
-      <div className="relative h-52 bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
+      <div className="relative w-full aspect-video bg-linear-to-br from-slate-800 to-slate-900 overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-blue-600/10 to-cyan-500/5" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
