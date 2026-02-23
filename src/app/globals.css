@@ -12,7 +12,7 @@
   --color-accent-light: #60a5fa;
   --color-highlight: #22d3ee;
 
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: var(--font-vazirmatn), system-ui, sans-serif;
 }
 
 @layer base {
@@ -28,7 +28,7 @@
   body {
     background-color: #020617;
     color: #f1f5f9;
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-vazirmatn), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -218,5 +218,52 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes gradientDrift {
+  0%, 100% {
+    transform: scale(1) translate(0, 0);
+    filter: blur(80px) hue-rotate(0deg);
+  }
+  33% {
+    transform: scale(1.08) translate(-2%, 2%);
+    filter: blur(80px) hue-rotate(18deg);
+  }
+  66% {
+    transform: scale(0.96) translate(2%, -1%);
+    filter: blur(80px) hue-rotate(-12deg);
+  }
+}
+
+@keyframes gradientDriftAlt {
+  0%, 100% {
+    transform: scale(1) translate(0, 0);
+    filter: blur(100px) hue-rotate(0deg);
+  }
+  40% {
+    transform: scale(1.1) translate(3%, -3%);
+    filter: blur(100px) hue-rotate(-20deg);
+  }
+  70% {
+    transform: scale(0.94) translate(-2%, 2%);
+    filter: blur(100px) hue-rotate(10deg);
+  }
+}
+
+.hero-circle-1 {
+  animation: gradientDrift 18s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.hero-circle-2 {
+  animation: gradientDriftAlt 22s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-circle-1,
+  .hero-circle-2 {
+    animation: none;
   }
 }

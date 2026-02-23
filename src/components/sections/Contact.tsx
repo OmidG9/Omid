@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Mail, MapPin, Send, Github, Linkedin } from "lucide-react";
 import Section from "@/components/ui/Section";
 import Container from "@/components/ui/Container";
@@ -44,14 +45,21 @@ export default function Contact() {
       <Container>
         <SectionHeader
           label="تماس"
-          title="با من در ارتباط باشید"
-          description="برای همکاری، پروژه یا هر سوالی، خوشحال می‌شوم پیامتان را بشنوم."
+          title="در تماس باشیم"
+          description="برای همکاری، مشاوره یا هر پرسشی، پیام‌تان را با کمال میل دریافت می‌کنم."
           center
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           {/* Left: Contact Info */}
-          <div className="space-y-6" dir="rtl">
+          <motion.div
+            className="space-y-6"
+            dir="rtl"
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             <div className="glass-card p-6 space-y-5">
               {contactInfo.map(({ icon: Icon, label, value, href }) => (
                 <div key={label} className="flex items-center gap-4">
@@ -113,10 +121,17 @@ export default function Contact() {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right: Form */}
-          <ContactForm />
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <ContactForm />
+          </motion.div>
         </div>
       </Container>
     </Section>

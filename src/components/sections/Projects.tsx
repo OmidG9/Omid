@@ -7,6 +7,7 @@ import Container from "@/components/ui/Container";
 import SectionHeader from "@/components/ui/SectionHeader";
 import ProjectCard from "@/components/projects/ProjectCard";
 import portfolio from "@/data/portfolio";
+import { getCategoryStyle } from "@/lib/categoryColors";
 
 const allCategories = ["همه", "Full-Stack", "Frontend", "UI/UX", "WordPress"];
 
@@ -30,19 +31,20 @@ export default function Projects() {
 
         {/* Filter chips */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
-          {allCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActive(cat)}
-              className={`px-5 py-2 text-sm font-medium rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 active:scale-95 ${
-                active === cat
-                  ? "bg-blue-600 border-blue-600 text-white shadow-glow"
-                  : "bg-transparent border-slate-700 text-slate-400 hover:border-blue-500/50 hover:text-slate-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {allCategories.map((cat) => {
+            const style = getCategoryStyle(cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => setActive(cat)}
+                className={`px-5 py-2 text-sm font-medium rounded-full border bg-transparent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 active:scale-95 ${
+                  active === cat ? style.active : style.inactive
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Grid */}

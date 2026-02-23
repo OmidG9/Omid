@@ -45,6 +45,10 @@ export interface Project {
   images: ProjectImage[];
   liveUrl?: string;
   githubUrl?: string;
+  /** URL for the live demo. If present, the demo button is active. */
+  demoUrl?: string;
+  /** How the demo is presented: external link (default) or embedded iframe. */
+  demoType?: "link" | "embed";
   features: string[];
 }
 
@@ -77,9 +81,9 @@ const portfolio: PortfolioData = {
   telegram: "https://t.me/hope3179",
   availability: "Open to opportunities",
   summary:
-    "توسعه‌دهنده فول‌استک با رویکرد محصول‌محور، با تجربه در ساخت اپلیکیشن‌های سازمانی، داشبوردهای Real-Time و پروژه‌های مقیاس‌پذیر. به کار تیمی، یادگیری مداوم و تحویل سریع اهمیت زیادی می‌دهم. از ابزارهای هوش مصنوعی برای افزایش سرعت و کیفیت توسعه استفاده می‌کنم.",
+    "توسعه‌دهنده فول‌استک با رویکرد محصول‌محور و تجربهٔ عملی در طراحی و پیاده‌سازی اپلیکیشن‌های سازمانی، داشبوردهای Real-Time و سرویس‌های مقیاس‌پذیر. به کیفیت کد، کار تیمی منسجم و تحویل به‌موقع اهمیت می‌دهم و از ابزارهای هوش مصنوعی برای تسریع و ارتقای فرآیند توسعه بهره می‌برم.",
   heroValue:
-    "توسعه‌دهنده فول‌استک با تمرکز بر توسعه محصول، کار تیمی و تحویل سریع.\nتجربه توسعه داشبوردهای Real-Time و پروژه‌های سازمانی.",
+    "توسعه‌دهنده فول‌استک با تمرکز بر محصول، کار تیمی و تحویل سریع.\nتجربه در پروژه‌های سازمانی، داشبوردهای Real-Time و بهینه‌سازی عملکرد.",
   socials: [
     {
       platform: "GitHub",
@@ -98,9 +102,9 @@ const portfolio: PortfolioData = {
     },
   ],
   stats: [
-    { value: "۵۰۰۰+", label: "کاربر فعال (IQDuel)" },
-    { value: "۱۲s → ۳s", label: "بهبود زمان لود" },
-    { value: "۴+", label: "پروژه سازمانی" },
+    { value: "۵۰۰۰+", label: "کاربر فعال در IQDuel" },
+    { value: "۱۲s → ۳s", label: "کاهش زمان لود صفحه" },
+    { value: "۴+", label: "پروژهٔ سازمانی تحویل‌داده‌شده" },
   ],
   techBadges: [
     "Node.js",
@@ -182,11 +186,11 @@ const portfolio: PortfolioData = {
       type: "Full-time",
       current: true,
       bullets: [
-        "مشارکت در توسعه و نگهداری ۴+ پروژه سازمانی مانند آموزینو و سمفا",
-        "بهبود Performance از ~70% به ~95% و کاهش زمان لود صفحه از ۱۲ ثانیه به ۳ ثانیه",
-        "طراحی و پیاده‌سازی API های RESTful با Node.js و Express",
-        "استقرار پروژه‌ها روی سرور Linux و پیکربندی Nginx به عنوان Reverse Proxy",
-        "همکاری با تیم‌های طراحی، محصول و QA در محیط Agile",
+        "مشارکت در طراحی، توسعه و نگهداری بیش از ۴ پروژهٔ سازمانی از جمله آموزینو و سمفا",
+        "بهبود Lighthouse Score از ~۷۰٪ به ~۹۵٪ و کاهش زمان لود از ۱۲ ثانیه به ۳ ثانیه",
+        "طراحی و پیاده‌سازی APIهای RESTful مقیاس‌پذیر با Node.js و Express",
+        "استقرار پروژه‌ها روی سرور Linux و پیکربندی Nginx به‌عنوان Reverse Proxy",
+        "همکاری مؤثر با تیم‌های طراحی، محصول و QA در چارچوب Agile",
       ],
     },
     {
@@ -196,9 +200,9 @@ const portfolio: PortfolioData = {
       type: "Contract",
       current: false,
       bullets: [
-        "طراحی رابط کاربری صفحه خرید بلیط هواپیما با هماهنگی تیم ~۲۵ نفره",
-        "ایجاد راهنمای طراحی (Design System) و Component Library در Figma",
-        "انجام User Research و بهبود تجربه کاربری فرآیند رزرو بلیط",
+        "طراحی رابط کاربری سیستم خرید بلیط هواپیما در هماهنگی با تیم ~۲۵ نفره",
+        "تدوین Design System و Component Library کامل در Figma",
+        "اجرای User Research و بهبود تجربهٔ کاربری فرآیند رزرو بلیط",
       ],
     },
     {
@@ -208,10 +212,10 @@ const portfolio: PortfolioData = {
       type: "Contract",
       current: false,
       bullets: [
-        "توسعه داشبورد مدیریتی با Next.js برای پلتفرم با ۵۰۰۰+ کاربر فعال",
-        "پیاده‌سازی ارتباط Real-Time با WebSocket برای آمار و اتفاقات لحظه‌ای",
-        "همکاری با تیم Back-End و DevOps در تیمی ~۵۰ نفره",
-        "ادغام با PostgreSQL و MongoDB برای نمایش داده‌های پیچیده",
+        "توسعهٔ داشبورد مدیریتی با Next.js و TypeScript برای پلتفرمی با بیش از ۵۰۰۰ کاربر فعال",
+        "پیاده‌سازی ارتباط Real-Time با WebSocket برای نمایش لحظه‌ای آمار و رویدادها",
+        "همکاری مستمر با تیم Back-End و DevOps در تیمی ~۵۰ نفره",
+        "یکپارچه‌سازی داده‌های PostgreSQL و MongoDB برای نمایش اطلاعات پیچیده",
       ],
     },
   ],
@@ -220,9 +224,9 @@ const portfolio: PortfolioData = {
       slug: "nakhsha",
       title: "نقشه (Nakhsha)",
       subtitle: "پلتفرم مکان‌محور MVP",
-      description: "پلتفرم MVP برای نمایش و مدیریت مکان‌ها با نقشه تعاملی",
+      description: "پلتفرم مکان‌محور Full-Stack؛ پروژهٔ MVP با نقشهٔ تعاملی Leaflet، سیستم احراز هویت JWT/OTP و ۱۰۰ محصول آزمایشی",
       longDescription:
-        "نقشه یک پلتفرم مکان‌محور Full-Stack است که با Node.js، Express و MongoDB در Back-End و React در Front-End ساخته شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشه Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و API های RESTful کامل طراحی شده‌اند.",
+        "نقشه یک پلتفرم مکان‌محور Full-Stack است که به‌عنوان MVP توسعه یافته. با Node.js، Express و MongoDB در Back-End و React در Front-End پیاده‌سازی شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشهٔ Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و APIهای RESTful کامل طراحی شده‌اند. در مرحلهٔ MVP با ۱۰۰ محصول آزمایشی راه‌اندازی شد.",
       stack: [
         "Node.js",
         "Express",

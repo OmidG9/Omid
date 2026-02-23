@@ -38,30 +38,37 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center"
       aria-label="معرفی"
     >
-      {/* Background gradients */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+      {/* Background gradient circles — extend into About section */}
+      <div className="absolute inset-0 pointer-events-none overflow-visible" aria-hidden="true">
         <div className="absolute inset-0 bg-slate-950" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-225 h-150 bg-linear-to-b from-blue-600/10 via-blue-500/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-100 h-100 bg-cyan-500/5 rounded-full blur-3xl" />
-        {/* Animated blobs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-600/8 rounded-full blur-2xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.6, 0.4] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        {/* Circle 1 — large top-center blue */}
+        <div
+          className="hero-circle-1 absolute -top-32 left-1/2 -translate-x-1/3 rounded-full"
+          style={{
+            width: "780px",
+            height: "780px",
+            background:
+              "radial-gradient(circle, rgba(59,130,246,0.16) 0%, rgba(37,99,235,0.08) 50%, transparent 75%)",
+          }}
         />
-        <motion.div
-          className="absolute bottom-1/4 right-1/3 w-48 h-48 bg-cyan-500/6 rounded-full blur-2xl"
-          animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        {/* Circle 2 — large bottom-right cyan */}
+        <div
+          className="hero-circle-2 absolute top-1/3 -right-40 rounded-full"
+          style={{
+            width: "640px",
+            height: "640px",
+            background:
+              "radial-gradient(circle, rgba(34,211,238,0.12) 0%, rgba(6,182,212,0.06) 50%, transparent 75%)",
+          }}
         />
       </div>
 
-      {/* Grid pattern overlay */}
+      {/* Subtle grid pattern overlay */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.025] pointer-events-none"
         style={{
           backgroundImage:
             "linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)",

@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
 import Gallery from "@/components/projects/Gallery";
+import { getCategoryStyle } from "@/lib/categoryColors";
 
 interface Props {
   params: { slug: string };
@@ -62,7 +63,7 @@ export default function ProjectDetailPage({ params }: Props) {
                 {project.category.map((cat) => (
                   <span
                     key={cat}
-                    className="px-3 py-1 text-xs font-semibold bg-blue-500/10 border border-blue-500/30 text-blue-300 rounded-full"
+                    className={`px-3 py-1 text-xs font-semibold rounded-full border ${getCategoryStyle(cat).tag}`}
                   >
                     {cat}
                   </span>
@@ -78,16 +79,30 @@ export default function ProjectDetailPage({ params }: Props) {
 
               {/* Action buttons */}
               <div className="flex flex-wrap gap-3 mt-8">
-                {project.liveUrl && (
+                {/* Demo button — always rendered */}
+                {project.demoUrl ? (
                   <a
-                    href={project.liveUrl}
+                    href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-primary"
                   >
                     <ExternalLink size={16} />
-                    مشاهده زنده
+                    دموی زنده
                   </a>
+                ) : (
+                  <div className="relative group/demo inline-block">
+                    <button
+                      disabled
+                      className="btn-primary opacity-40 cursor-not-allowed"
+                    >
+                      <ExternalLink size={16} />
+                      دموی زنده
+                    </button>
+                    <div className="absolute bottom-full mb-2 right-0 w-64 px-3 py-2 bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg opacity-0 group-hover/demo:opacity-100 transition-opacity duration-200 pointer-events-none z-20 text-right leading-relaxed">
+                      فعلاً برای این پروژه دمویی وجود ندارد
+                    </div>
+                  </div>
                 )}
                 {project.githubUrl && (
                   <a
@@ -166,39 +181,59 @@ export default function ProjectDetailPage({ params }: Props) {
                   تکنولوژی‌ها
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {project.stack.map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/25 text-blue-300 text-sm rounded-lg"
-                    >
-                      {tech}
-                    </span>
-                  ))}
+                  {project.stack.map((tech) => {
+                    const cat = project.category[0] ?? "Full-Stack";
+                    const style = getCategoryStyle(cat);
+                    return (
+                      <span
+                        key={tech}
+                        className={`px-3 py-1.5 text-sm rounded-lg border ${style.tag}`}
+                      >
+                        {tech}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Demo placeholder */}
+              {/* Demo section */}
               <div className="glass-card p-6">
-                <h3 className="text-base font-bold text-slate-100 mb-3">
-                  نمایش زنده
+                <h3 className="text-base font-bold text-slate-100 mb-4">
+                  دموی زنده
                 </h3>
-                <div className="h-32 bg-slate-800/50 rounded-lg flex items-center justify-center border border-dashed border-slate-700">
-                  <p className="text-slate-500 text-sm text-center px-3">
-                    {project.liveUrl
-                      ? "نمایش زنده موجود است"
-                      : "به زودی اضافه می‌شود"}
-                  </p>
-                </div>
-                {project.liveUrl && (
+                {project.demoType === "embed" && project.demoUrl ? (
+                  <div className="overflow-hidden rounded-lg border border-slate-700/60">
+                    <iframe
+                      src={project.demoUrl}
+                      title={`دموی ${project.title}`}
+                      className="w-full h-64"
+                      sandbox="allow-scripts allow-same-origin allow-forms"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : project.demoUrl ? (
                   <a
-                    href={project.liveUrl}
+                    href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-primary w-full justify-center mt-4 text-sm"
+                    className="btn-primary w-full justify-center text-sm"
                   >
                     <ExternalLink size={15} />
-                    باز کردن
+                    مشاهده دمو
                   </a>
+                ) : (
+                  <div className="relative group/demo">
+                    <button
+                      disabled
+                      className="btn-primary w-full justify-center text-sm opacity-40 cursor-not-allowed"
+                    >
+                      <ExternalLink size={15} />
+                      دموی زنده
+                    </button>
+                    <p className="mt-3 text-xs text-slate-500 text-center leading-relaxed">
+                      فعلاً برای این پروژه دمویی وجود ندارد
+                    </p>
+                  </div>
                 )}
               </div>
 
