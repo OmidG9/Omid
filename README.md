@@ -16,13 +16,6 @@ npm run build && npm start   # production
 
 ---
 
-## Environment Variables
-
-Copy `.env.example` to `.env.local` and fill in your values.
-See `.env.example` for the list of required keys — **never commit `.env.local`**.
-
----
-
 ## Project Structure
 
 ```
