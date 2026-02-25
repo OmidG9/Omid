@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "Omid Ghanbari - Full-Stack Web Developer Portfolio",
   "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 8000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 8000",
     "lint": "next lint",
     "format": "prettier --write ."
   },
