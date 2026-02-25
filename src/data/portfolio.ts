@@ -1,3 +1,21 @@
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Trims a URL string and returns `undefined` if it is empty, so optional
+ * fields on Project remain truly absent rather than holding an empty string.
+ */
+function normalizeUrl(value?: string): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Interfaces
+// ---------------------------------------------------------------------------
+
 export interface Social {
   platform: string;
   url: string;
@@ -71,41 +89,44 @@ export interface PortfolioData {
   projects: Project[];
 }
 
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+
 const portfolio: PortfolioData = {
   name: "امید قنبری",
   nameEn: "Omid Ghanbari",
   title: "توسعه‌دهنده فول‌استک",
   titleEn: "Full-Stack Web Developer (Node.js | React | Next.js)",
   location: "تهران، ایران",
-  email: "omidghanbari@example.com", // TODO: update with real email
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
   telegram: "https://t.me/hope3179",
   availability: "Open to opportunities",
   summary:
     "توسعه‌دهنده فول‌استک با رویکرد محصول‌محور و تجربهٔ عملی در طراحی و پیاده‌سازی اپلیکیشن‌های سازمانی، داشبوردهای Real-Time و سرویس‌های مقیاس‌پذیر. به کیفیت کد، کار تیمی منسجم و تحویل به‌موقع اهمیت می‌دهم و از ابزارهای هوش مصنوعی برای تسریع و ارتقای فرآیند توسعه بهره می‌برم.",
   heroValue:
     "توسعه‌دهنده فول‌استک با تمرکز بر محصول، کار تیمی و تحویل سریع.\nتجربه در پروژه‌های سازمانی، داشبوردهای Real-Time و بهینه‌سازی عملکرد.",
+
   socials: [
     {
       platform: "GitHub",
       url: "https://github.com/OmidG9",
       label: "GitHub Profile",
     },
-    {
-      platform: "LinkedIn",
-      url: "https://linkedin.com/in/USERNAME", // TODO: update with real LinkedIn
-      label: "LinkedIn Profile",
-    },
+    // LinkedIn omitted until a real profile URL is available
     {
       platform: "Telegram",
       url: "https://t.me/hope3179",
       label: "Telegram Contact",
     },
   ],
+
   stats: [
     { value: "۵۰۰۰+", label: "کاربر فعال در IQDuel" },
     { value: "۱۲s → ۳s", label: "کاهش زمان لود صفحه" },
     { value: "۴+", label: "پروژهٔ سازمانی تحویل‌داده‌شده" },
   ],
+
   techBadges: [
     "Node.js",
     "Express",
@@ -123,6 +144,7 @@ const portfolio: PortfolioData = {
     "Git",
     "Figma",
   ],
+
   skillCategories: [
     {
       name: "Backend",
@@ -178,6 +200,7 @@ const portfolio: PortfolioData = {
       ],
     },
   ],
+
   experiences: [
     {
       company: "تجارت الکترونیک آرون پایدار",
@@ -219,6 +242,7 @@ const portfolio: PortfolioData = {
       ],
     },
   ],
+
   projects: [
     {
       slug: "nakhsha",
@@ -228,15 +252,7 @@ const portfolio: PortfolioData = {
         "پلتفرم مکان‌محور Full-Stack؛ پروژهٔ MVP با نقشه تعاملی Leaflet، سیستم احراز هویت JWT/OTP و ۱۰۰ محصول آزمایشی",
       longDescription:
         "نخشا یک پلتفرم مکان‌محور Full-Stack است که به‌عنوان MVP توسعه یافته. با Node.js، Express و MongoDB در Back-End و React در Front-End پیاده‌سازی شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشه Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و APIهای RESTful کامل طراحی شده‌اند. در مرحلهٔ MVP با ۱۰۰ محصول آزمایشی راه‌اندازی شد.",
-      stack: [
-        "Node.js",
-        "Express",
-        "MongoDB",
-        "React",
-        "Leaflet.js",
-        "JWT",
-        "OTP",
-      ],
+      stack: ["Node.js", "Express", "MongoDB", "React", "Leaflet.js", "JWT", "OTP"],
       category: ["Full-Stack"],
       coverImage: "/projects/nakhsha/cover.jpg",
       images: [
@@ -244,8 +260,8 @@ const portfolio: PortfolioData = {
         { src: "/projects/nakhsha/map-view.jpg", alt: "نمای نخشا" },
         { src: "/projects/nakhsha/dashboard.jpg", alt: "داشبورد" },
       ],
-      liveUrl: "",
-      githubUrl: "",
+      liveUrl: normalizeUrl(""),
+      githubUrl: normalizeUrl(""),
       features: [
         "احراز هویت با JWT و OTP",
         "نقشه تعاملی با Leaflet.js",
@@ -261,25 +277,15 @@ const portfolio: PortfolioData = {
       description: "داشبورد مدیریتی Real-Time برای بازی رقابتی با ۵۰۰۰+ کاربر",
       longDescription:
         "داشبورد مدیریتی پلتفرم IQDuel با Next.js و TypeScript ساخته شده. با WebSocket اطلاعات بازی‌ها، کاربران و تراکنش‌ها به صورت Real-Time نمایش داده می‌شوند. داده از PostgreSQL و MongoDB ترکیب شده و در قالب چارت‌های تعاملی به ادمین‌ها نمایش داده می‌شود.",
-      stack: [
-        "Next.js",
-        "TypeScript",
-        "WebSocket",
-        "PostgreSQL",
-        "MongoDB",
-        "TailwindCSS",
-      ],
+      stack: ["Next.js", "TypeScript", "WebSocket", "PostgreSQL", "MongoDB", "TailwindCSS"],
       category: ["Frontend", "Full-Stack"],
       coverImage: "/projects/iqduel-dashboard/cover.jpg",
       images: [
         { src: "/projects/iqduel-dashboard/cover.jpg", alt: "داشبورد IQDuel" },
-        {
-          src: "/projects/iqduel-dashboard/realtime.jpg",
-          alt: "آمار Real-Time",
-        },
+        { src: "/projects/iqduel-dashboard/realtime.jpg", alt: "آمار Real-Time" },
       ],
-      liveUrl: "",
-      githubUrl: "",
+      liveUrl: normalizeUrl(""),
+      githubUrl: normalizeUrl(""),
       features: [
         "آمار Real-Time با WebSocket",
         "مدیریت کاربران و مسابقه‌ها",
@@ -302,8 +308,8 @@ const portfolio: PortfolioData = {
         { src: "/projects/traticket/cover.jpg", alt: "TraTicket Cover" },
         { src: "/projects/traticket/wireframe.jpg", alt: "Wireframes" },
       ],
-      liveUrl: "",
-      githubUrl: "",
+      liveUrl: normalizeUrl(""),
+      githubUrl: normalizeUrl(""),
       features: [
         "طراحی فرآیند خرید ۳ مرحله‌ای",
         "Design System در Figma",
@@ -325,8 +331,8 @@ const portfolio: PortfolioData = {
       images: [
         { src: "/projects/aroon-paydar/cover.jpg", alt: "وبسایت آرون پایدار" },
       ],
-      liveUrl: "",
-      githubUrl: "",
+      liveUrl: normalizeUrl(""),
+      githubUrl: normalizeUrl(""),
       features: [
         "طراحی Custom Theme",
         "بهینه‌سازی SEO",
@@ -349,8 +355,8 @@ const portfolio: PortfolioData = {
         { src: "/projects/amoozino/cover.jpg", alt: "آموزینو" },
         { src: "/projects/amoozino/performance.jpg", alt: "نتایج Performance" },
       ],
-      liveUrl: "",
-      githubUrl: "",
+      liveUrl: normalizeUrl(""),
+      githubUrl: normalizeUrl(""),
       features: [
         "بهبود Performance از 70% به 95%",
         "کاهش زمان لود از ۱۲s به ۳s",
