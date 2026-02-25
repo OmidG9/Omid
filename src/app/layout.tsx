@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import IntroOverlay from '@/components/IntroOverlay';
+import dynamic from 'next/dynamic';
 import '@fontsource/vazirmatn/300.css';
 import '@fontsource/vazirmatn/400.css';
 import '@fontsource/vazirmatn/500.css';
@@ -7,6 +7,10 @@ import '@fontsource/vazirmatn/600.css';
 import '@fontsource/vazirmatn/700.css';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+
+const IntroOverlay = dynamic(() => import('@/components/IntroOverlay'), {
+  ssr: false,
+});
 
 const BASE_URL = 'https://omidghanbari.dev';
 
