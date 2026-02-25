@@ -252,7 +252,15 @@ const portfolio: PortfolioData = {
         "پلتفرم مکان‌محور Full-Stack؛ پروژهٔ MVP با نقشه تعاملی Leaflet، سیستم احراز هویت JWT/OTP و ۱۰۰ محصول آزمایشی",
       longDescription:
         "نخشا یک پلتفرم مکان‌محور Full-Stack است که به‌عنوان MVP توسعه یافته. با Node.js، Express و MongoDB در Back-End و React در Front-End پیاده‌سازی شده. کاربران می‌توانند با OTP ثبت‌نام کنند، مکان‌ها را روی نقشه Leaflet ثبت، ویرایش و مشاهده کنند. سیستم احراز هویت با JWT پیاده‌سازی شده و APIهای RESTful کامل طراحی شده‌اند. در مرحلهٔ MVP با ۱۰۰ محصول آزمایشی راه‌اندازی شد.",
-      stack: ["Node.js", "Express", "MongoDB", "React", "Leaflet.js", "JWT", "OTP"],
+      stack: [
+        "Node.js",
+        "Express",
+        "MongoDB",
+        "React",
+        "Leaflet.js",
+        "JWT",
+        "OTP",
+      ],
       category: ["Full-Stack"],
       coverImage: "/projects/nakhsha/cover.jpg",
       images: [
@@ -277,12 +285,22 @@ const portfolio: PortfolioData = {
       description: "داشبورد مدیریتی Real-Time برای بازی رقابتی با ۵۰۰۰+ کاربر",
       longDescription:
         "داشبورد مدیریتی پلتفرم IQDuel با Next.js و TypeScript ساخته شده. با WebSocket اطلاعات بازی‌ها، کاربران و تراکنش‌ها به صورت Real-Time نمایش داده می‌شوند. داده از PostgreSQL و MongoDB ترکیب شده و در قالب چارت‌های تعاملی به ادمین‌ها نمایش داده می‌شود.",
-      stack: ["Next.js", "TypeScript", "WebSocket", "PostgreSQL", "MongoDB", "TailwindCSS"],
+      stack: [
+        "Next.js",
+        "TypeScript",
+        "WebSocket",
+        "PostgreSQL",
+        "MongoDB",
+        "TailwindCSS",
+      ],
       category: ["Frontend", "Full-Stack"],
       coverImage: "/projects/iqduel-dashboard/cover.jpg",
       images: [
         { src: "/projects/iqduel-dashboard/cover.jpg", alt: "داشبورد IQDuel" },
-        { src: "/projects/iqduel-dashboard/realtime.jpg", alt: "آمار Real-Time" },
+        {
+          src: "/projects/iqduel-dashboard/realtime.jpg",
+          alt: "آمار Real-Time",
+        },
       ],
       liveUrl: normalizeUrl(""),
       githubUrl: normalizeUrl(""),
