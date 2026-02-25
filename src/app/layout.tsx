@@ -7,8 +7,14 @@ import '@fontsource/vazirmatn/700.css';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 
+const BASE_URL = 'https://omidghanbari.dev';
+
 export const metadata: Metadata = {
-  title: 'امید قنبری | Full-Stack Web Developer',
+  metadataBase: new URL(BASE_URL),
+  title: {
+    template: '%s | امید قنبری',
+    default: 'امید قنبری | Full-Stack Web Developer',
+  },
   description:
     'توسعه‌دهنده فول‌استک با تخصص در Node.js، React و Next.js. تجربه در پروژه‌های سازمانی، داشبوردهای Real-Time و بهینه‌سازی عملکرد.',
   keywords: [
@@ -18,26 +24,55 @@ export const metadata: Metadata = {
     'Node.js',
     'React',
     'Next.js',
+    'TypeScript',
     'Web Developer Tehran',
+    'توسعه‌دهنده وب تهران',
+    'برنامه‌نویس فول‌استک',
   ],
-  authors: [{ name: 'Omid Ghanbari' }],
+  authors: [{ name: 'Omid Ghanbari', url: BASE_URL }],
   creator: 'Omid Ghanbari',
   openGraph: {
     type: 'website',
     locale: 'fa_IR',
-    url: 'https://omidghanbari.dev',
+    alternateLocale: 'en_US',
+    url: BASE_URL,
     title: 'امید قنبری | Full-Stack Web Developer',
-    description: 'توسعه‌دهنده فول‌استک با تخصص در Node.js، React و Next.js.',
+    description:
+      'توسعه‌دهنده فول‌استک با تخصص در Node.js، React و Next.js. تجربه در پروژه‌های سازمانی، داشبوردهای Real-Time و بهینه‌سازی عملکرد.',
     siteName: 'Omid Ghanbari Portfolio',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'امید قنبری – Full-Stack Web Developer',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'امید قنبری | Full-Stack Web Developer',
-    description: 'توسعه‌دهنده فول‌استک با تخصص در Node.js، React و Next.js.',
+    description:
+      'توسعه‌دهنده فول‌استک با تخصص در Node.js، React و Next.js. تجربه در پروژه‌های سازمانی، داشبوردهای Real-Time و بهینه‌سازی عملکرد.',
+    creator: '@omidghanbari',
+    images: ['/og-image.png'],
   },
-  robots: 'index, follow',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: '/favicon.svg',
+  },
+  alternates: {
+    canonical: BASE_URL,
   },
 };
 

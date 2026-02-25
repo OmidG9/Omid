@@ -17,12 +17,42 @@ export async function generateStaticParams() {
   return portfolio.projects.map((p) => ({ slug: p.slug }));
 }
 
+const BASE_URL = 'https://omidghanbari.dev';
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = portfolio.projects.find((p) => p.slug === params.slug);
   if (!project) return { title: 'پروژه یافت نشد' };
+
+  const projectUrl = `${BASE_URL}/projects/${project.slug}`;
+
   return {
-    title: `${project.title} | امید قنبری`,
+    title: project.title,
     description: project.description,
+    alternates: {
+      canonical: projectUrl,
+    },
+    openGraph: {
+      type: 'article',
+      locale: 'fa_IR',
+      url: projectUrl,
+      title: `${project.title} | امید قنبری`,
+      description: project.description,
+      siteName: 'Omid Ghanbari Portfolio',
+      images: project.coverImage
+        ? [{ url: project.coverImage, alt: project.title }]
+        : [
+            {
+              url: '/og-image.png',
+              alt: 'امید قنبری – Full-Stack Web Developer',
+            },
+          ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${project.title} | امید قنبری`,
+      description: project.description,
+      images: project.coverImage ? [project.coverImage] : ['/og-image.png'],
+    },
   };
 }
 
