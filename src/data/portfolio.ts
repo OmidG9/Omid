@@ -99,7 +99,8 @@ const portfolio: PortfolioData = {
   title: 'توسعه‌دهنده فول‌استک',
   titleEn: 'Full-Stack Web Developer (Node.js | React | Next.js)',
   location: 'تهران، ایران',
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '',
+  email:
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'omid.ghanbari.1399@gmail.com',
   telegram: 'https://t.me/hope3179',
   availability: 'Open to opportunities',
   summary:
