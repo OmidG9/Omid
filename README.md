@@ -55,10 +55,18 @@ cp .env.example .env.local
 ```
 
 ```env
-CONTACT_SMTP_USER=omid.ghanbari.1399@gmail.com
-CONTACT_SMTP_PASS=xxxx xxxx xxxx xxxx   # paste your App Password here
-CONTACT_TO=omid.ghanbari.1399@gmail.com
-CONTACT_FROM_NAME=Omid Portfolio
+# ── SMTP credentials ──────────────────────────────────────────────────────────
+# All four variables are required at runtime; the server will refuse to start
+# sending mail if any of them is absent.
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587                            # 587 = STARTTLS  |  465 = implicit TLS
+SMTP_USER=your-address@gmail.com         # Gmail address used to authenticate
+SMTP_PASS=xxxx xxxx xxxx xxxx           # Gmail App Password (16 chars, no spaces)
+
+# ── Recipient / display settings ─────────────────────────────────────────────
+CONTACT_TO=your-address@gmail.com        # Who receives the contact form messages
+CONTACT_FROM_NAME=Omid Portfolio         # Display name shown in the From field
 ```
 
 > **Never commit `.env.local`** – it is already listed in `.gitignore`.

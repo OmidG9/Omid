@@ -10,6 +10,17 @@ export interface ContactEmailData {
   userAgent: string;
 }
 
+// ─── Env guard ────────────────────────────────────────────────────────────────
+
+/** Reads an env var and throws a descriptive error if it is absent or empty. */
+function requireEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
 // ─── Transport ───────────────────────────────────────────────────────────────
 
 // How long (ms) to wait for each SMTP phase before giving up
@@ -18,16 +29,18 @@ const SMTP_TIMEOUT_MS = 10_000;
 const SEND_TIMEOUT_MS = 15_000;
 
 function createTransporter() {
+  const host = requireEnvVar('SMTP_HOST');
+  const port = parseInt(requireEnvVar('SMTP_PORT'), 10);
+  const user = requireEnvVar('SMTP_USER');
+  const pass = requireEnvVar('SMTP_PASS');
+
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587, // STARTTLS – widely allowed; port 465 (implicit SSL) is often blocked
-    secure: false, // false = start plain, then upgrade via STARTTLS
-    requireTLS: true, // abort if the server doesn't offer STARTTLS
-    auth: {
-      user: process.env.CONTACT_SMTP_USER,
-      pass: process.env.CONTACT_SMTP_PASS,
-    },
-    // These prevent indefinite hangs when Gmail is slow or credentials are wrong
+    host,
+    port,
+    secure: port === 465, // true = implicit TLS (port 465)
+    requireTLS: port !== 465, // enforce STARTTLS on all other ports
+    auth: { user, pass },
+    // Prevent indefinite hangs on slow or misconfigured servers
     connectionTimeout: SMTP_TIMEOUT_MS, // TCP connect
     greetingTimeout: SMTP_TIMEOUT_MS, // SMTP 220 banner
     socketTimeout: SMTP_TIMEOUT_MS, // idle socket read
@@ -56,6 +69,17 @@ function escapeHtml(raw: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
+}
+
+// ─── Header injection sanitiser ──────────────────────────────────────────────
+
+/**
+ * Strips CR, LF, and NUL characters from a value destined for an SMTP header
+ * field (From, To, Subject, Reply-To, etc.). Without this a malicious user
+ * could inject extra headers by embedding "\r\n" in their name or email.
+ */
+function sanitizeHeader(value: string): string {
+  return value.replace(/[\r\n\0]/g, '').trim();
 }
 
 // ─── Plain-text alternative ──────────────────────────────────────────────────
@@ -305,26 +329,40 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
 
   const tehranTime = `${jalaliDate}  ساعت ${jalaliTime}`;
 
-  // Fail fast if credentials are not configured
-  if (!process.env.CONTACT_SMTP_USER || !process.env.CONTACT_SMTP_PASS) {
-    throw new Error('SMTP credentials are not configured.');
-  }
-
+  // createTransporter validates all four SMTP env vars; if any are absent it
+  // throws a descriptive error before we waste time formatting dates.
   const transporter = createTransporter();
 
   const fromName = process.env.CONTACT_FROM_NAME ?? 'Omid Portfolio';
-  const fromAddr = process.env.CONTACT_SMTP_USER;
+  const fromAddr = requireEnvVar('SMTP_USER');
   const toAddr = process.env.CONTACT_TO ?? fromAddr;
 
-  await withTimeout(
-    transporter.sendMail({
-      from: `"${fromName}" <${fromAddr}>`,
-      to: toAddr,
-      replyTo: `"${escapeHtml(data.name)}" <${data.email}>`,
-      subject: `New message from ${data.name} — Portfolio`,
-      text: generatePlainText(data, tehranTime),
-      html: generateDarkEmailHtml(data, tehranTime),
-    }),
-    SEND_TIMEOUT_MS
-  );
+  // Sanitize header fields to prevent SMTP header injection.
+  const safeSenderName = sanitizeHeader(data.name);
+  const safeSenderEmail = sanitizeHeader(data.email);
+
+  try {
+    await withTimeout(
+      transporter.sendMail({
+        from: `"${fromName}" <${fromAddr}>`,
+        to: toAddr,
+        replyTo: `"${safeSenderName}" <${safeSenderEmail}>`,
+        subject: `New message from ${safeSenderName} — Portfolio`,
+        text: generatePlainText(data, tehranTime),
+        html: generateDarkEmailHtml(data, tehranTime),
+      }),
+      SEND_TIMEOUT_MS
+    );
+  } catch (error) {
+    // Log transport-level details for debugging; never log credentials or raw
+    // user content (PII / injection risk).
+    const reason = error instanceof Error ? error.message : String(error);
+    console.error('[email] sendContactEmail failed', {
+      reason,
+      smtpHost: process.env.SMTP_HOST,
+      smtpPort: process.env.SMTP_PORT,
+      // SMTP_USER and SMTP_PASS intentionally omitted
+    });
+    throw error; // re-throw so the API route returns 500
+  }
 }
