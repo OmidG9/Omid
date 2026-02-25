@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Github, Linkedin, Send, Download, Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import portfolio from "@/data/portfolio";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Github, Linkedin, Send, Download, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import portfolio from '@/data/portfolio';
 
 const navLinks = [
-  { label: "درباره من", href: "#about" },
-  { label: "مهارت‌ها", href: "#skills" },
-  { label: "تجربیات", href: "#experience" },
-  { label: "پروژه‌ها", href: "#projects" },
-  { label: "تماس", href: "#contact" },
+  { label: 'درباره من', href: '#about' },
+  { label: 'مهارت‌ها', href: '#skills' },
+  { label: 'تجربیات', href: '#experience' },
+  { label: 'پروژه‌ها', href: '#projects' },
+  { label: 'تماس', href: '#contact' },
 ];
 
 const socialIcons: Record<string, React.ElementType> = {
@@ -22,7 +22,7 @@ const socialIcons: Record<string, React.ElementType> = {
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState("");
+  const [active, setActive] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function Navbar() {
       setScrolled(window.scrollY > 20);
 
       // Track active section
-      const sections = navLinks.map((l) => l.href.replace("#", ""));
+      const sections = navLinks.map((l) => l.href.replace('#', ''));
       for (const id of [...sections].reverse()) {
         const el = document.getElementById(id);
         if (el && window.scrollY >= el.offsetTop - 120) {
@@ -39,8 +39,8 @@ export default function Navbar() {
         }
       }
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleNavClick = (href: string) => {
@@ -52,8 +52,8 @@ export default function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-slate-950/80 backdrop-blur-md shadow-lg shadow-black/30"
-          : "bg-transparent"
+          ? 'bg-slate-950/80 backdrop-blur-md shadow-lg shadow-black/30'
+          : 'bg-transparent'
       }`}
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -77,15 +77,15 @@ export default function Navbar() {
               onClick={() => handleNavClick(link.href)}
               className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 active === link.href
-                  ? "text-blue-400"
-                  : "text-slate-400 hover:text-slate-100"
+                  ? 'text-blue-400'
+                  : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               {active === link.href && (
                 <motion.span
                   layoutId="nav-indicator"
                   className="absolute inset-0 bg-blue-500/10 rounded-lg"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                 />
               )}
               <span className="relative z-10">{link.label}</span>
@@ -129,7 +129,7 @@ export default function Navbar() {
         <button
           className="md:hidden p-2 text-slate-400 hover:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? "بستن منو" : "باز کردن منو"}
+          aria-label={menuOpen ? 'بستن منو' : 'باز کردن منو'}
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -153,8 +153,8 @@ export default function Navbar() {
                   onClick={() => handleNavClick(link.href)}
                   className={`px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     active === link.href
-                      ? "bg-blue-500/10 text-blue-400"
-                      : "text-slate-300 hover:bg-slate-800/60"
+                      ? 'bg-blue-500/10 text-blue-400'
+                      : 'text-slate-300 hover:bg-slate-800/60'
                   }`}
                 >
                   {link.label}

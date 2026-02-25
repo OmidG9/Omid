@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { motion, Variants } from "framer-motion";
-import { ReactNode } from "react";
+import { motion, Variants } from 'framer-motion';
+import { ReactNode } from 'react';
 
 interface SectionProps {
   id?: string;
@@ -21,14 +21,14 @@ const sectionVariants: Variants = {
 export default function Section({
   id,
   children,
-  className = "",
+  className = '',
 }: SectionProps) {
   return (
     <motion.section
       id={id}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
+      viewport={{ once: true, margin: '-80px' }}
       variants={sectionVariants}
       className={`py-16 sm:py-20 ${className}`}
     >

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { motion, Variants } from "framer-motion";
+import { motion, Variants } from 'framer-motion';
 import {
   Github,
   Linkedin,
@@ -8,9 +8,9 @@ import {
   ArrowDown,
   MapPin,
   Briefcase,
-} from "lucide-react";
-import Link from "next/link";
-import portfolio from "@/data/portfolio";
+} from 'lucide-react';
+import Link from 'next/link';
+import portfolio from '@/data/portfolio';
 
 const socialIcons: Record<string, React.ElementType> = {
   GitHub: Github,
@@ -51,20 +51,20 @@ export default function Hero() {
         <div
           className="hero-circle-1 absolute -top-32 left-1/2 -translate-x-1/3 rounded-full"
           style={{
-            width: "780px",
-            height: "780px",
+            width: '780px',
+            height: '780px',
             background:
-              "radial-gradient(circle, rgba(59,130,246,0.16) 0%, rgba(37,99,235,0.08) 50%, transparent 75%)",
+              'radial-gradient(circle, rgba(59,130,246,0.16) 0%, rgba(37,99,235,0.08) 50%, transparent 75%)',
           }}
         />
         {/* Circle 2 — large bottom-right cyan */}
         <div
           className="hero-circle-2 absolute top-1/3 -right-40 rounded-full"
           style={{
-            width: "640px",
-            height: "640px",
+            width: '640px',
+            height: '640px',
             background:
-              "radial-gradient(circle, rgba(34,211,238,0.12) 0%, rgba(6,182,212,0.06) 50%, transparent 75%)",
+              'radial-gradient(circle, rgba(34,211,238,0.12) 0%, rgba(6,182,212,0.06) 50%, transparent 75%)',
           }}
         />
       </div>
@@ -74,8 +74,8 @@ export default function Hero() {
         className="absolute inset-0 opacity-[0.025] pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+            'linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
         }}
         aria-hidden="true"
       />
@@ -120,10 +120,10 @@ export default function Hero() {
             className="max-w-xl mb-10 px-6 py-4 glass-card text-center"
             dir="rtl"
           >
-            {portfolio.heroValue.split("\n").map((line, i) => (
+            {portfolio.heroValue.split('\n').map((line, i) => (
               <p
                 key={i}
-                className={`text-slate-300 text-base leading-relaxed ${i === 0 ? "mb-1" : ""}`}
+                className={`text-slate-300 text-base leading-relaxed ${i === 0 ? 'mb-1' : ''}`}
               >
                 {line}
               </p>
@@ -180,12 +180,12 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="mt-20">
             <motion.div
               animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               className="flex flex-col items-center gap-1 text-slate-600 cursor-pointer hover:text-slate-400 transition-colors"
               onClick={() =>
                 document
-                  .getElementById("about")
-                  ?.scrollIntoView({ behavior: "smooth" })
+                  .getElementById('about')
+                  ?.scrollIntoView({ behavior: 'smooth' })
               }
             >
               <span className="text-xs tracking-widest uppercase">Scroll</span>

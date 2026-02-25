@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ const SEND_TIMEOUT_MS = 15_000;
 
 function createTransporter() {
   return nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: 'smtp.gmail.com',
     port: 587, // STARTTLS – widely allowed; port 465 (implicit SSL) is often blocked
     secure: false, // false = start plain, then upgrade via STARTTLS
     requireTLS: true, // abort if the server doesn't offer STARTTLS
@@ -41,8 +41,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     new Promise<T>((_, reject) =>
       setTimeout(
         () => reject(new Error(`Email send timed out after ${ms / 1000}s`)),
-        ms,
-      ),
+        ms
+      )
     ),
   ]);
 }
@@ -51,43 +51,43 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 function escapeHtml(raw: string): string {
   return raw
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
 }
 
 // ─── Plain-text alternative ──────────────────────────────────────────────────
 
 function generatePlainText(data: ContactEmailData, tehranTime: string): string {
   return [
-    "New message from your portfolio",
-    "─".repeat(40),
+    'New message from your portfolio',
+    '─'.repeat(40),
     `Name:      ${data.name}`,
     `Email:     ${data.email}`,
     `Time:      ${tehranTime}`,
-    "",
-    "Message:",
+    '',
+    'Message:',
     data.message,
-    "",
-    "─".repeat(40),
+    '',
+    '─'.repeat(40),
     `IP: ${data.ip}`,
     `UA: ${data.userAgent}`,
-    "",
-    "Sent from your portfolio contact form",
-  ].join("\n");
+    '',
+    'Sent from your portfolio contact form',
+  ].join('\n');
 }
 
 // ─── Dark HTML Email Template ────────────────────────────────────────────────
 
 function generateDarkEmailHtml(
   data: ContactEmailData,
-  tehranTime: string,
+  tehranTime: string
 ): string {
   const safeName = escapeHtml(data.name);
   const safeEmail = escapeHtml(data.email);
-  const safeMessage = escapeHtml(data.message).replace(/\n/g, "<br>");
+  const safeMessage = escapeHtml(data.message).replace(/\n/g, '<br>');
   const safeTime = escapeHtml(tehranTime);
   const safeIp = escapeHtml(data.ip);
 
@@ -286,20 +286,20 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
   const now = new Date();
 
   // Jalali (Shamsi) date with Persian numerals – e.g. "۴ اسفند ۱۴۰۴"
-  const jalaliDate = new Intl.DateTimeFormat("fa-IR", {
-    timeZone: "Asia/Tehran",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    calendar: "persian",
+  const jalaliDate = new Intl.DateTimeFormat('fa-IR', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    calendar: 'persian',
   }).format(now);
 
   // Time in 24-hour format – e.g. "۱۷:۴۰:۱۵"
-  const jalaliTime = new Intl.DateTimeFormat("fa-IR", {
-    timeZone: "Asia/Tehran",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  const jalaliTime = new Intl.DateTimeFormat('fa-IR', {
+    timeZone: 'Asia/Tehran',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
     hour12: false,
   }).format(now);
 
@@ -307,12 +307,12 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
 
   // Fail fast if credentials are not configured
   if (!process.env.CONTACT_SMTP_USER || !process.env.CONTACT_SMTP_PASS) {
-    throw new Error("SMTP credentials are not configured.");
+    throw new Error('SMTP credentials are not configured.');
   }
 
   const transporter = createTransporter();
 
-  const fromName = process.env.CONTACT_FROM_NAME ?? "Omid Portfolio";
+  const fromName = process.env.CONTACT_FROM_NAME ?? 'Omid Portfolio';
   const fromAddr = process.env.CONTACT_SMTP_USER;
   const toAddr = process.env.CONTACT_TO ?? fromAddr;
 
@@ -325,6 +325,6 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
       text: generatePlainText(data, tehranTime),
       html: generateDarkEmailHtml(data, tehranTime),
     }),
-    SEND_TIMEOUT_MS,
+    SEND_TIMEOUT_MS
   );
 }

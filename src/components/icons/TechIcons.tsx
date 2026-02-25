@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface IconProps {
   className?: string;
@@ -401,18 +401,18 @@ export interface TechInfo {
 }
 
 export const TECH_MAP: Record<string, TechInfo> = {
-  "Node.js": { name: "Node.js", Icon: NodejsIcon, color: "#339933" },
-  Express: { name: "Express", Icon: ExpressIcon, color: "#aaaaaa" },
-  "Next.js": { name: "Next.js", Icon: NextjsIcon, color: "#a8b4c8" },
-  React: { name: "React", Icon: ReactIcon, color: "#61DAFB" },
-  TailwindCSS: { name: "TailwindCSS", Icon: TailwindIcon, color: "#06B6D4" },
-  MongoDB: { name: "MongoDB", Icon: MongodbIcon, color: "#47A248" },
-  PostgreSQL: { name: "PostgreSQL", Icon: PostgresqlIcon, color: "#4169E1" },
-  WebSocket: { name: "WebSocket", Icon: WebSocketIcon, color: "#6366F1" },
-  Leaflet: { name: "Leaflet", Icon: LeafletIcon, color: "#199900" },
-  Nginx: { name: "Nginx", Icon: NginxIcon, color: "#009900" },
-  Git: { name: "Git", Icon: GitIcon, color: "#F05032" },
-  Figma: { name: "Figma", Icon: FigmaIcon, color: "#F24E1E" },
-  Postman: { name: "Postman", Icon: PostmanIcon, color: "#FF6C37" },
-  WordPress: { name: "WordPress", Icon: WordPressIcon, color: "#21759B" },
+  'Node.js': { name: 'Node.js', Icon: NodejsIcon, color: '#339933' },
+  Express: { name: 'Express', Icon: ExpressIcon, color: '#aaaaaa' },
+  'Next.js': { name: 'Next.js', Icon: NextjsIcon, color: '#a8b4c8' },
+  React: { name: 'React', Icon: ReactIcon, color: '#61DAFB' },
+  TailwindCSS: { name: 'TailwindCSS', Icon: TailwindIcon, color: '#06B6D4' },
+  MongoDB: { name: 'MongoDB', Icon: MongodbIcon, color: '#47A248' },
+  PostgreSQL: { name: 'PostgreSQL', Icon: PostgresqlIcon, color: '#4169E1' },
+  WebSocket: { name: 'WebSocket', Icon: WebSocketIcon, color: '#6366F1' },
+  Leaflet: { name: 'Leaflet', Icon: LeafletIcon, color: '#199900' },
+  Nginx: { name: 'Nginx', Icon: NginxIcon, color: '#009900' },
+  Git: { name: 'Git', Icon: GitIcon, color: '#F05032' },
+  Figma: { name: 'Figma', Icon: FigmaIcon, color: '#F24E1E' },
+  Postman: { name: 'Postman', Icon: PostmanIcon, color: '#FF6C37' },
+  WordPress: { name: 'WordPress', Icon: WordPressIcon, color: '#21759B' },
 };

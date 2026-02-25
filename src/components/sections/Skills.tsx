@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Server, Monitor, Map, Terminal, Wrench } from "lucide-react";
-import Section from "@/components/ui/Section";
-import Container from "@/components/ui/Container";
-import SectionHeader from "@/components/ui/SectionHeader";
-import portfolio from "@/data/portfolio";
+import { motion } from 'framer-motion';
+import { Server, Monitor, Map, Terminal, Wrench } from 'lucide-react';
+import Section from '@/components/ui/Section';
+import Container from '@/components/ui/Container';
+import SectionHeader from '@/components/ui/SectionHeader';
+import portfolio from '@/data/portfolio';
 
 const iconMap: Record<string, React.ElementType> = {
   server: Server,

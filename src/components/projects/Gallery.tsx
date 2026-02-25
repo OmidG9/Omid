@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, BookOpen, X } from "lucide-react";
-import { ProjectImage } from "@/data/portfolio";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, BookOpen, X } from 'lucide-react';
+import { ProjectImage } from '@/data/portfolio';
 
 interface GalleryProps {
   images: ProjectImage[];
@@ -54,8 +54,8 @@ export default function Gallery({ images, title }: GalleryProps) {
                 onClick={() => setCurrent(i)}
                 className={`shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   i === current
-                    ? "border-blue-500 shadow-glow"
-                    : "border-slate-700 hover:border-slate-500"
+                    ? 'border-blue-500 shadow-glow'
+                    : 'border-slate-700 hover:border-slate-500'
                 }`}
                 aria-label={img.alt}
               >

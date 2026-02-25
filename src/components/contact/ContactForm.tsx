@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { Send, Mail, MessageSquare, User } from "lucide-react";
-import { ContactFormData } from "@/lib/contactSchema";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { Send, Mail, MessageSquare, User } from 'lucide-react';
+import { ContactFormData } from '@/lib/contactSchema';
 
 export default function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
@@ -20,11 +20,11 @@ export default function ContactForm() {
   const onSubmit = async (data: ContactFormData) => {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         // company is the honeypot field – always empty for real users
-        body: JSON.stringify({ ...data, company: "" }),
+        body: JSON.stringify({ ...data, company: '' }),
       });
       const json = await res.json();
 
@@ -32,10 +32,10 @@ export default function ContactForm() {
         setSuccess(true);
         reset();
       } else {
-        toast.error("ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.");
+        toast.error('ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
       }
     } catch {
-      toast.error("ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.");
+      toast.error('ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
     } finally {
       setSubmitting(false);
     }
@@ -80,10 +80,10 @@ export default function ContactForm() {
           id="name"
           type="text"
           placeholder="امید قنبری"
-          className={`input-field ${errors.name ? "border-red-500/60 focus:ring-red-500" : ""}`}
-          {...register("name", {
-            required: "نام الزامی است",
-            minLength: { value: 2, message: "نام باید حداقل ۲ کاراکتر باشد" },
+          className={`input-field ${errors.name ? 'border-red-500/60 focus:ring-red-500' : ''}`}
+          {...register('name', {
+            required: 'نام الزامی است',
+            minLength: { value: 2, message: 'نام باید حداقل ۲ کاراکتر باشد' },
           })}
         />
         {errors.name && (
@@ -105,12 +105,12 @@ export default function ContactForm() {
           type="email"
           placeholder="example@email.com"
           dir="ltr"
-          className={`input-field ${errors.email ? "border-red-500/60 focus:ring-red-500" : ""}`}
-          {...register("email", {
-            required: "ایمیل الزامی است",
+          className={`input-field ${errors.email ? 'border-red-500/60 focus:ring-red-500' : ''}`}
+          {...register('email', {
+            required: 'ایمیل الزامی است',
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "ایمیل معتبر نیست",
+              message: 'ایمیل معتبر نیست',
             },
           })}
         />
@@ -132,12 +132,12 @@ export default function ContactForm() {
           id="message"
           rows={5}
           placeholder="پیام خود را بنویسید..."
-          className={`input-field resize-none ${errors.message ? "border-red-500/60 focus:ring-red-500" : ""}`}
-          {...register("message", {
-            required: "پیام الزامی است",
+          className={`input-field resize-none ${errors.message ? 'border-red-500/60 focus:ring-red-500' : ''}`}
+          {...register('message', {
+            required: 'پیام الزامی است',
             minLength: {
               value: 10,
-              message: "پیام باید حداقل ۱۰ کاراکتر باشد",
+              message: 'پیام باید حداقل ۱۰ کاراکتر باشد',
             },
           })}
         />
@@ -155,7 +155,7 @@ export default function ContactForm() {
         aria-hidden="true"
         tabIndex={-1}
         autoComplete="off"
-        style={{ display: "none" }}
+        style={{ display: 'none' }}
       />
 
       <button

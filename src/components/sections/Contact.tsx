@@ -1,42 +1,42 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Mail, MapPin, Send, Github, Linkedin } from "lucide-react";
-import Section from "@/components/ui/Section";
-import Container from "@/components/ui/Container";
-import SectionHeader from "@/components/ui/SectionHeader";
-import ContactForm from "@/components/contact/ContactForm";
-import portfolio from "@/data/portfolio";
+import { motion } from 'framer-motion';
+import { Mail, MapPin, Send, Github, Linkedin } from 'lucide-react';
+import Section from '@/components/ui/Section';
+import Container from '@/components/ui/Container';
+import SectionHeader from '@/components/ui/SectionHeader';
+import ContactForm from '@/components/contact/ContactForm';
+import portfolio from '@/data/portfolio';
 
 const contactInfo = [
   {
     icon: Mail,
-    label: "ایمیل",
+    label: 'ایمیل',
     value: portfolio.email,
     href: `mailto:${portfolio.email}`,
   },
   {
     icon: Send,
-    label: "تلگرام",
-    value: "@hope3179",
+    label: 'تلگرام',
+    value: '@hope3179',
     href: portfolio.telegram,
   },
   {
     icon: MapPin,
-    label: "موقعیت",
+    label: 'موقعیت',
     value: portfolio.location,
     href: null,
   },
 ];
 
 const socialLinks = [
-  { icon: Github, label: "GitHub", href: "https://github.com/OmidG9" },
+  { icon: Github, label: 'GitHub', href: 'https://github.com/OmidG9' },
   {
     icon: Linkedin,
-    label: "LinkedIn",
-    href: "https://linkedin.com/in/USERNAME",
+    label: 'LinkedIn',
+    href: 'https://linkedin.com/in/USERNAME',
   },
-  { icon: Send, label: "Telegram", href: "https://t.me/hope3179" },
+  { icon: Send, label: 'Telegram', href: 'https://t.me/hope3179' },
 ];
 
 export default function Contact() {
@@ -71,7 +71,7 @@ export default function Contact() {
                     {href ? (
                       <a
                         href={href}
-                        target={href.startsWith("http") ? "_blank" : undefined}
+                        target={href.startsWith('http') ? '_blank' : undefined}
                         rel="noopener noreferrer"
                         className="text-slate-200 hover:text-blue-400 transition-colors font-medium text-sm"
                       >

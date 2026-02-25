@@ -181,8 +181,8 @@ Icons are stored as inline SVG React components in `src/components/icons/TechIco
 The `TECH_MAP` object maps technology names to their icon component and brand colour:
 
 ```typescript
-import { TECH_MAP } from "@/components/icons/TechIcons";
-const { Icon, color, name } = TECH_MAP["React"];
+import { TECH_MAP } from '@/components/icons/TechIcons';
+const { Icon, color, name } = TECH_MAP['React'];
 ```
 
 ### To add a new technology:

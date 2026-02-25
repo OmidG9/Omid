@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Section from "@/components/ui/Section";
-import Container from "@/components/ui/Container";
-import SectionHeader from "@/components/ui/SectionHeader";
-import ProjectCard from "@/components/projects/ProjectCard";
-import portfolio from "@/data/portfolio";
-import { getCategoryStyle } from "@/lib/categoryColors";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Section from '@/components/ui/Section';
+import Container from '@/components/ui/Container';
+import SectionHeader from '@/components/ui/SectionHeader';
+import ProjectCard from '@/components/projects/ProjectCard';
+import portfolio from '@/data/portfolio';
+import { getCategoryStyle } from '@/lib/categoryColors';
 
-const allCategories = ["همه", "Full-Stack", "Frontend", "UI/UX", "WordPress"];
+const allCategories = ['همه', 'Full-Stack', 'Frontend', 'UI/UX', 'WordPress'];
 
 export default function Projects() {
-  const [active, setActive] = useState("همه");
+  const [active, setActive] = useState('همه');
 
   const filtered =
-    active === "همه"
+    active === 'همه'
       ? portfolio.projects
       : portfolio.projects.filter((p) => p.category.includes(active));
 

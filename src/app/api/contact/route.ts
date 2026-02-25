@@ -1,9 +1,9 @@
 // Force Node.js runtime – required for Nodemailer (no Edge support)
-export const runtime = "nodejs";
+export const runtime = 'nodejs';
 
-import { NextRequest, NextResponse } from "next/server";
-import { contactSchema } from "@/lib/contactSchema";
-import { sendContactEmail } from "@/lib/email";
+import { NextRequest, NextResponse } from 'next/server';
+import { contactSchema } from '@/lib/contactSchema';
+import { sendContactEmail } from '@/lib/email';
 
 // ─── In-memory rate limiter ───────────────────────────────────────────────────
 // { ip → [timestamp, ...] }
@@ -27,15 +27,15 @@ export async function POST(request: NextRequest) {
   try {
     // Resolve client IP (works behind Vercel / Nginx reverse proxy)
     const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-      request.headers.get("x-real-ip") ??
-      "unknown";
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+      request.headers.get('x-real-ip') ??
+      'unknown';
 
     // Rate limit
     if (isRateLimited(ip)) {
       return NextResponse.json(
-        { ok: false, error: "Too many requests. Please try again later." },
-        { status: 429 },
+        { ok: false, error: 'Too many requests. Please try again later.' },
+        { status: 429 }
       );
     }
 
@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
     const result = contactSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
-        { ok: false, error: "Invalid input." },
-        { status: 400 },
+        { ok: false, error: 'Invalid input.' },
+        { status: 400 }
       );
     }
 
@@ -58,16 +58,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
-    const userAgent = request.headers.get("user-agent") ?? "unknown";
+    const userAgent = request.headers.get('user-agent') ?? 'unknown';
 
     await sendContactEmail({ name, email, message, ip, userAgent });
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
-    console.error("Contact API error:", error);
+    console.error('Contact API error:', error);
     return NextResponse.json(
-      { ok: false, error: "Failed to send message. Please try again later." },
-      { status: 500 },
+      { ok: false, error: 'Failed to send message. Please try again later.' },
+      { status: 500 }
     );
   }
 }

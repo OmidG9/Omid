@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { Briefcase, Calendar, CheckCircle2 } from "lucide-react";
-import Section from "@/components/ui/Section";
-import Container from "@/components/ui/Container";
-import SectionHeader from "@/components/ui/SectionHeader";
-import portfolio from "@/data/portfolio";
+import { useEffect, useRef } from 'react';
+import { Briefcase, Calendar, CheckCircle2 } from 'lucide-react';
+import Section from '@/components/ui/Section';
+import Container from '@/components/ui/Container';
+import SectionHeader from '@/components/ui/SectionHeader';
+import portfolio from '@/data/portfolio';
 
 export default function Experience() {
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -13,15 +13,15 @@ export default function Experience() {
 
   useEffect(() => {
     const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
+      '(prefers-reduced-motion: reduce)'
     ).matches;
     if (prefersReduced) return;
 
     let ctx: { revert: () => void } | undefined;
 
     const initGSAP = async () => {
-      const { default: gsap } = await import("gsap");
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      const { default: gsap } = await import('gsap');
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
 
       ctx = gsap.context(() => {
@@ -29,22 +29,22 @@ export default function Experience() {
         if (lineRef.current) {
           gsap.fromTo(
             lineRef.current,
-            { scaleY: 0, transformOrigin: "top center" },
+            { scaleY: 0, transformOrigin: 'top center' },
             {
               scaleY: 1,
-              ease: "none",
+              ease: 'none',
               scrollTrigger: {
                 trigger: timelineRef.current,
-                start: "top 80%",
-                end: "bottom 75%",
+                start: 'top 80%',
+                end: 'bottom 75%',
                 scrub: 0.6,
               },
-            },
+            }
           );
         }
 
         // Animate each timeline card
-        const items = timelineRef.current?.querySelectorAll(".experience-item");
+        const items = timelineRef.current?.querySelectorAll('.experience-item');
         if (items && items.length > 0) {
           gsap.fromTo(
             items,
@@ -54,17 +54,17 @@ export default function Experience() {
               y: 0,
               duration: 0.65,
               stagger: 0.18,
-              ease: "power2.out",
+              ease: 'power2.out',
               scrollTrigger: {
                 trigger: timelineRef.current,
-                start: "top 82%",
+                start: 'top 82%',
               },
-            },
+            }
           );
         }
 
         // Animate dots
-        const dots = timelineRef.current?.querySelectorAll(".timeline-dot");
+        const dots = timelineRef.current?.querySelectorAll('.timeline-dot');
         if (dots && dots.length > 0) {
           gsap.fromTo(
             dots,
@@ -74,12 +74,12 @@ export default function Experience() {
               opacity: 1,
               duration: 0.4,
               stagger: 0.18,
-              ease: "back.out(1.7)",
+              ease: 'back.out(1.7)',
               scrollTrigger: {
                 trigger: timelineRef.current,
-                start: "top 82%",
+                start: 'top 82%',
               },
-            },
+            }
           );
         }
       }, timelineRef);
@@ -112,7 +112,7 @@ export default function Experience() {
               <div
                 key={i}
                 className={`experience-item relative flex flex-col md:flex-row ${
-                  i % 2 === 0 ? "md:flex-row-reverse" : ""
+                  i % 2 === 0 ? 'md:flex-row-reverse' : ''
                 } gap-8`}
               >
                 {/* Timeline dot */}

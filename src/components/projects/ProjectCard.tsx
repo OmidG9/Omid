@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { ExternalLink, Github, ArrowUpRight, BookOpen } from "lucide-react";
-import { Project } from "@/data/portfolio";
-import { getCategoryStyle } from "@/lib/categoryColors";
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { ExternalLink, Github, ArrowUpRight, BookOpen } from 'lucide-react';
+import { Project } from '@/data/portfolio';
+import { getCategoryStyle } from '@/lib/categoryColors';
 
 interface ProjectCardProps {
   project: Project;
@@ -13,7 +13,7 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, index }: ProjectCardProps) {
   // Use the first category's color as the card accent
-  const primaryCat = project.category[0] ?? "Full-Stack";
+  const primaryCat = project.category[0] ?? 'Full-Stack';
   const catStyle = getCategoryStyle(primaryCat);
 
   const hasDemo = Boolean(project.demoUrl);

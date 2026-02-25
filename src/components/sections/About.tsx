@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import Section from "@/components/ui/Section";
-import Container from "@/components/ui/Container";
-import SectionHeader from "@/components/ui/SectionHeader";
-import { TECH_MAP } from "@/components/icons/TechIcons";
-import portfolio from "@/data/portfolio";
+import { motion } from 'framer-motion';
+import Section from '@/components/ui/Section';
+import Container from '@/components/ui/Container';
+import SectionHeader from '@/components/ui/SectionHeader';
+import { TECH_MAP } from '@/components/icons/TechIcons';
+import portfolio from '@/data/portfolio';
 
 // Ordered list of technologies to feature
 const FEATURED_TECHS = [
-  "Node.js",
-  "Express",
-  "Next.js",
-  "React",
-  "TailwindCSS",
-  "MongoDB",
-  "PostgreSQL",
-  "WebSocket",
-  "Leaflet",
-  "Nginx",
-  "Git",
-  "Figma",
-  "Postman",
-  "WordPress",
+  'Node.js',
+  'Express',
+  'Next.js',
+  'React',
+  'TailwindCSS',
+  'MongoDB',
+  'PostgreSQL',
+  'WebSocket',
+  'Leaflet',
+  'Nginx',
+  'Git',
+  'Figma',
+  'Postman',
+  'WordPress',
 ];
 
 function hexToRgb(hex: string) {

@@ -1,13 +1,13 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowRight, ExternalLink, Github, CheckCircle2 } from "lucide-react";
-import type { Metadata } from "next";
-import portfolio from "@/data/portfolio";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import Container from "@/components/ui/Container";
-import Gallery from "@/components/projects/Gallery";
-import { getCategoryStyle } from "@/lib/categoryColors";
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowRight, ExternalLink, Github, CheckCircle2 } from 'lucide-react';
+import type { Metadata } from 'next';
+import portfolio from '@/data/portfolio';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import Container from '@/components/ui/Container';
+import Gallery from '@/components/projects/Gallery';
+import { getCategoryStyle } from '@/lib/categoryColors';
 
 interface Props {
   params: { slug: string };
@@ -19,7 +19,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = portfolio.projects.find((p) => p.slug === params.slug);
-  if (!project) return { title: "پروژه یافت نشد" };
+  if (!project) return { title: 'پروژه یافت نشد' };
   return {
     title: `${project.title} | امید قنبری`,
     description: project.description,
@@ -182,7 +182,7 @@ export default function ProjectDetailPage({ params }: Props) {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {project.stack.map((tech) => {
-                    const cat = project.category[0] ?? "Full-Stack";
+                    const cat = project.category[0] ?? 'Full-Stack';
                     const style = getCategoryStyle(cat);
                     return (
                       <span
@@ -201,7 +201,7 @@ export default function ProjectDetailPage({ params }: Props) {
                 <h3 className="text-base font-bold text-slate-100 mb-4">
                   دموی زنده
                 </h3>
-                {project.demoType === "embed" && project.demoUrl ? (
+                {project.demoType === 'embed' && project.demoUrl ? (
                   <div className="overflow-hidden rounded-lg border border-slate-700/60">
                     <iframe
                       src={project.demoUrl}

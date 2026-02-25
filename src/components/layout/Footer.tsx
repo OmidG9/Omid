@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { Github } from "lucide-react";
-import Container from "@/components/ui/Container";
+import Link from 'next/link';
+import { Github } from 'lucide-react';
+import Container from '@/components/ui/Container';
 
 export default function Footer() {
   const year = new Date().getFullYear();
