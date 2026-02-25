@@ -1,424 +1,139 @@
-# امید قنبری – Portfolio Website
+﻿# Portfolio — Omid Ghanbari
 
-A professional, dark-themed full-stack developer portfolio built with **Next.js 14**, **TypeScript**, **TailwindCSS**, **Framer Motion**, and **GSAP**.
+Personal portfolio built with **Next.js 14 App Router**, TypeScript, TailwindCSS v4, Framer Motion, and GSAP.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-
-### Install Dependencies
+**Requirements:** Node.js 18+, npm 9+
 
 ```bash
 npm install
-```
-
-### Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build for Production
-
-```bash
-npm run build
-npm start
+npm run dev        # http://localhost:3000
+npm run build && npm start   # production
 ```
 
 ---
 
-## � Contact Form – Email Setup
+## Environment Variables
 
-The contact form sends real emails via **Gmail SMTP + Nodemailer**.
-
-### 1. Create a Gmail App Password
-
-> You need 2-Step Verification enabled on your Google account first.
-
-1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-2. Select **Mail** as the app and **Other** as the device (enter "Portfolio")
-3. Click **Generate** – copy the 16-character password shown
-
-### 2. Configure Environment Variables
-
-Copy `.env.example` to `.env.local` and fill in your credentials:
-
-```bash
-cp .env.example .env.local
-```
-
-```env
-# ── SMTP credentials ──────────────────────────────────────────────────────────
-# All four variables are required at runtime; the server will refuse to start
-# sending mail if any of them is absent.
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587                            # 587 = STARTTLS  |  465 = implicit TLS
-SMTP_USER=your-address@gmail.com         # Gmail address used to authenticate
-SMTP_PASS=xxxx xxxx xxxx xxxx           # Gmail App Password (16 chars, no spaces)
-
-# ── Recipient / display settings ─────────────────────────────────────────────
-CONTACT_TO=your-address@gmail.com        # Who receives the contact form messages
-CONTACT_FROM_NAME=Omid Portfolio         # Display name shown in the From field
-```
-
-> **Never commit `.env.local`** – it is already listed in `.gitignore`.
-
-### 3. Test Locally
-
-```bash
-npm run dev
-# Open http://localhost:3000, scroll to Contact, fill the form and submit.
-# Check your inbox at CONTACT_TO.
-```
+Copy `.env.example` to `.env.local` and fill in your values.
+See `.env.example` for the list of required keys — **never commit `.env.local`**.
 
 ---
 
-## �📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── app/
-│   ├── layout.tsx           # Root layout (Vazirmatn font, RTL, metadata)
-│   ├── page.tsx             # Homepage (all sections)
-│   ├── globals.css          # Global Tailwind styles + gradient keyframes
-│   ├── api/
-│   │   └── contact/
-│   │       └── route.ts     # POST /api/contact handler
-│   └── projects/
-│       └── [slug]/
-│           └── page.tsx     # Project detail page with demo section
-├── components/
-│   ├── icons/
-│   │   └── TechIcons.tsx    # SVG tech icons + TECH_MAP brand colors
-│   ├── layout/
-│   │   ├── Navbar.tsx       # Sticky navbar (no border flicker)
-│   │   └── Footer.tsx
-│   ├── sections/
-│   │   ├── Hero.tsx         # CSS-animated gradient circles
-│   │   ├── About.tsx        # Two-column: text+stats / branded tech chips
-│   │   ├── Skills.tsx
-│   │   ├── Experience.tsx   # GSAP ScrollTrigger animations
-│   │   ├── Projects.tsx     # Category-colored filter chips
-│   │   └── Contact.tsx
-│   ├── projects/
-│   │   ├── ProjectCard.tsx  # Always-visible demo button + category colors
-│   │   └── Gallery.tsx
-│   ├── contact/
-│   │   └── ContactForm.tsx
-│   └── ui/
-│       ├── Section.tsx
-│       ├── Container.tsx
-│       └── SectionHeader.tsx  # Framer Motion whileInView entrance
-├── data/
-│   └── portfolio.ts           # ← ALL content lives here
-└── lib/
-    ├── categoryColors.ts      # Category → Tailwind color tokens
-    └── contactSchema.ts       # Zod schema
+ app/
+    layout.tsx            # Root layout (font, metadata, intro overlay)
+    page.tsx              # Homepage
+    globals.css           # Tailwind theme tokens + global styles
+    api/contact/          # POST /api/contact  email + rate limiter
+    projects/[slug]/      # Dynamic project detail page
+ components/
+    IntroOverlay.tsx      # First-visit fullscreen intro
+    layout/               # Navbar, Footer
+    sections/             # Hero, About, Skills, Experience, Projects, Contact
+    projects/             # ProjectCard, Gallery
+    contact/              # ContactForm
+    icons/                # TechIcons + TECH_MAP
+    ui/                   # Section, Container, SectionHeader
+ data/
+    portfolio.ts          # all site content lives here
+ lib/
+     categoryColors.ts
+     contactSchema.ts
+     email.ts
+     rateLimiter.ts        # Upstash Redis sliding-window (falls back to memory)
 ```
 
 ---
 
-## ✏️ How to Edit Content
+## Editing Content
 
-All text content, projects, skills, experience, and social links are in:
-
-```
-src/data/portfolio.ts
-```
+All text, projects, skills, experience, and social links are in **`src/data/portfolio.ts`** no other files need to change.
 
 ---
 
-## 🖼️ How to Add a New Project
+## Adding a Project
 
-1. Add an entry in `src/data/portfolio.ts` under `projects`:
+1. Add an entry to the `projects` array in `portfolio.ts`:
 
 ```typescript
 {
   slug: 'my-project',
-  title: 'عنوان پروژه',
-  subtitle: 'زیرعنوان',
-  description: 'توضیح کوتاه',
-  longDescription: 'توضیح کامل...',
+  title: '...',
+  subtitle: '...',
+  description: '...',
+  longDescription: '...',
   stack: ['Next.js', 'MongoDB'],
-  category: ['Full-Stack'],               // Full-Stack | Frontend | UI/UX | WordPress
+  category: ['Full-Stack'],          // Full-Stack | Frontend | UI/UX | WordPress
   coverImage: '/projects/my-project/cover.jpg',
-  images: [{ src: '/projects/my-project/cover.jpg', alt: 'Cover' }],
-  liveUrl: 'https://your-live-site.com',  // optional
-  githubUrl: 'https://github.com/...',    // optional
-  demoUrl: 'https://demo.example.com',   // optional — activates demo button
-  demoType: 'link',                       // 'link' (default) | 'embed' (iframe)
-  features: ['ویژگی ۱', 'ویژگی ۲'],
+  images: [{ src: '/projects/my-project/cover.jpg', alt: '...' }],
+  liveUrl: 'https://...',            // optional
+  githubUrl: 'https://github.com/...', // optional
+  demoUrl: 'https://...',            // optional  enables demo button
+  demoType: 'link',                  // 'link' | 'embed' (iframe)
+  features: ['...'],
 }
 ```
 
-2. Add images to `public/projects/my-project/` (recommended: 1200×630px cover).
+2. Place images in `public/projects/my-project/` (recommended cover: 1200x630 px).
 
 ---
 
-## 🎬 Enabling a Live Demo
+## Adding a Tech Icon
 
-Each project card and detail page renders a **"دموی زنده"** button:
-
-| State                                   | Behaviour                            |
-| --------------------------------------- | ------------------------------------ |
-| `demoUrl` present + `demoType: 'link'`  | Opens the URL in a new tab           |
-| `demoUrl` present + `demoType: 'embed'` | Renders an `<iframe>` in the sidebar |
-| `demoUrl` absent                        | Disabled button + Persian tooltip    |
-
-### To add an iframe embed demo:
-
-```typescript
-demoUrl: 'https://codesandbox.io/embed/...',
-demoType: 'embed',
-```
-
----
-
-## 🎨 Tech Logo Icons
-
-Icons are stored as inline SVG React components in `src/components/icons/TechIcons.tsx`.
-
-The `TECH_MAP` object maps technology names to their icon component and brand colour:
-
-```typescript
-import { TECH_MAP } from '@/components/icons/TechIcons';
-const { Icon, color, name } = TECH_MAP['React'];
-```
-
-### To add a new technology:
-
-1. Create an SVG component in `TechIcons.tsx`:
+1. Create an SVG component in `src/components/icons/TechIcons.tsx`:
 
 ```typescript
 export const MyTechIcon = ({ className, style }: IconProps) => (
-  <svg className={className} style={style} viewBox="0 0 24 24" ...>
-    {/* paths */}
-  </svg>
+  <svg className={className} style={style} viewBox="0 0 24 24">...</svg>
 );
 ```
 
-2. Register it in `TECH_MAP`:
+2. Register in `TECH_MAP`:
 
 ```typescript
-"My Tech": { name: "My Tech", Icon: MyTechIcon, color: "#HEXCOLOR" },
+"My Tech": { name: "My Tech", Icon: MyTechIcon, color: "#HEX" },
 ```
-
-3. Add it to `FEATURED_TECHS` array in `About.tsx` to display it in the About section.
 
 ---
 
-## 🏷️ Category Color System
+## Category Colors
 
-Category colors are centralised in `src/lib/categoryColors.ts`:
+Centralized in `src/lib/categoryColors.ts`.
 
-| Category   | Colour          |
+| Category   | Color           |
 | ---------- | --------------- |
 | Full-Stack | Blue            |
 | Frontend   | Cyan / Sky      |
 | UI/UX      | Violet / Purple |
 | WordPress  | Indigo          |
 
-Used by filter chips in `Projects.tsx`, tag badges in `ProjectCard.tsx`, and the detail page.
-
 ---
 
-## 📧 Contact Form
-
-Posts to `/api/contact`. Add email service in `src/app/api/contact/route.ts`.
-
-**Recommended: [Resend](https://resend.com)**
-
-```bash
-npm install resend
-```
-
----
-
-## 📄 Resume
-
-Place your PDF at `public/resume.pdf`. The navbar button links to it automatically.
-
----
-
-## 🌐 Deploy to Vercel
+## Deploy
 
 1. Push to GitHub
-2. Import at [vercel.com](https://vercel.com)
-3. Deploy — Vercel auto-detects Next.js
+2. Import at [vercel.com](https://vercel.com) Next.js is auto-detected
+3. Add environment variables in Vercel project settings
 
 ---
 
-## 🎨 Color Palette
+## Color Palette
 
-| Token        | Value               | Usage               |
-| ------------ | ------------------- | ------------------- |
-| Background   | `#020617` slate-950 | Page background     |
-| Surface      | `#0f172a` slate-900 | Cards               |
-| Accent       | `#3b82f6` blue-500  | Buttons, highlights |
-| Text primary | `#f1f5f9` slate-100 | Headings            |
-| Text muted   | `#94a3b8` slate-400 | Body                |
+| Token      | Value             | Usage               |
+| ---------- | ----------------- | ------------------- |
+| Background | #020617 slate-950 | Page background     |
+| Surface    | #0f172a slate-900 | Cards               |
+| Accent     | #3b82f6 blue-500  | Buttons, highlights |
+| Text       | #f1f5f9 slate-100 | Headings            |
+| Muted      | #94a3b8 slate-400 | Body text           |
 
 ---
 
 Built with Next.js 14 · TypeScript · TailwindCSS · Framer Motion · GSAP
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build for Production
-
-```bash
-npm run build
-npm start
-```
-
----
-
-## 📁 Project Structure
-
-```
-src/
-├── app/
-│   ├── layout.tsx           # Root layout (font, metadata, toast)
-│   ├── page.tsx             # Homepage (all sections)
-│   ├── globals.css          # Global Tailwind styles
-│   ├── api/
-│   │   └── contact/
-│   │       └── route.ts     # POST /api/contact handler
-│   └── projects/
-│       └── [slug]/
-│           └── page.tsx     # Project detail page
-├── components/
-│   ├── layout/
-│   │   ├── Navbar.tsx       # Sticky navbar with blur + active indicator
-│   │   └── Footer.tsx
-│   ├── sections/
-│   │   ├── Hero.tsx
-│   │   ├── About.tsx
-│   │   ├── Skills.tsx
-│   │   ├── Experience.tsx
-│   │   ├── Projects.tsx
-│   │   └── Contact.tsx
-│   ├── projects/
-│   │   ├── ProjectCard.tsx
-│   │   └── Gallery.tsx
-│   ├── contact/
-│   │   └── ContactForm.tsx
-│   └── ui/
-│       ├── Section.tsx
-│       ├── Container.tsx
-│       └── SectionHeader.tsx
-├── data/
-│   └── portfolio.ts         # ← ALL content lives here
-└── lib/
-    └── contactSchema.ts     # Zod schema
-```
-
----
-
-## ✏️ How to Edit Content
-
-All text content, projects, skills, experience, and social links are in one file:
-
-```
-src/data/portfolio.ts
-```
-
-Edit directly — no other files need to change.
-
----
-
-## 🖼️ How to Add a New Project
-
-1. Add entry in `src/data/portfolio.ts` under the `projects` array:
-
-```typescript
-{
-  slug: 'my-new-project',
-  title: 'عنوان پروژه',
-  subtitle: 'زیرعنوان',
-  description: 'توضیح کوتاه',
-  longDescription: 'توضیح کامل...',
-  stack: ['Next.js', 'MongoDB'],
-  category: ['Full-Stack'],
-  coverImage: '/projects/my-new-project/cover.jpg',
-  images: [
-    { src: '/projects/my-new-project/cover.jpg', alt: 'Cover' },
-  ],
-  liveUrl: 'https://your-live-site.com',
-  githubUrl: 'https://github.com/...',
-  features: ['ویژگی ۱', 'ویژگی ۲'],
-}
-```
-
-2. Add images to `public/projects/my-new-project/` (recommended: 1200×630px for cover).
-
----
-
-## 📧 Contact Form
-
-Posts to `/api/contact`. Add email service in `src/app/api/contact/route.ts`.
-
-**Recommended: [Resend](https://resend.com)**
-
-```bash
-npm install resend
-```
-
----
-
-## 📄 Resume
-
-Place your PDF at `public/resume.pdf`. The navbar button links to it automatically.
-
----
-
-## 🌐 Deploy to Vercel
-
-1. Push to GitHub
-2. Import at [vercel.com](https://vercel.com)
-3. Deploy — Vercel auto-detects Next.js
-
----
-
-## 🎨 Color Palette
-
-| Token        | Value               | Usage               |
-| ------------ | ------------------- | ------------------- |
-| Background   | `#020617` slate-950 | Page background     |
-| Surface      | `#0f172a` slate-900 | Cards               |
-| Accent       | `#3b82f6` blue-500  | Buttons, highlights |
-| Text primary | `#f1f5f9` slate-100 | Headings            |
-| Text muted   | `#94a3b8` slate-400 | Body                |
-
----
-
-Built with Next.js 14 · TypeScript · TailwindCSS · Framer Motion
