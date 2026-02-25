@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import IntroOverlay from '@/components/IntroOverlay';
 import '@fontsource/vazirmatn/300.css';
 import '@fontsource/vazirmatn/400.css';
 import '@fontsource/vazirmatn/500.css';
@@ -89,6 +90,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body className="bg-slate-950 text-slate-100 antialiased">
+        <IntroOverlay />
         {children}
         <Toaster
           position="bottom-center"

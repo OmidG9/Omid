@@ -35,9 +35,9 @@ function getRedis(): import('@upstash/redis').Redis | null {
   if (!url || !token) return null;
 
   if (!redisClient) {
-    // Lazy import avoids errors when the package is present but env vars are absent
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Redis } = require('@upstash/redis');
+    // Lazy require avoids errors when the package is present but env vars are absent
+    const { Redis } =
+      require('@upstash/redis') as typeof import('@upstash/redis');
     redisClient = new Redis({ url, token });
   }
   return redisClient;
