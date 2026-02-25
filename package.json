@@ -29,6 +29,7 @@
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@upstash/redis": "^1.36.2",
     "autoprefixer": "^10.4.24",
     "framer-motion": "^12.34.3",
     "gsap": "^3.14.2",
