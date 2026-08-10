@@ -2668,3 +2668,95 @@ Better performance
 The final result must be:
 
 > **A premium, lightweight, secure, privacy-aware Personal Intelligence Dashboard for ghanbariomid.ir — powerful enough to understand visitors and leads, but intentionally small enough to maintain as a personal project.**
+
+
+Observability بدون Overengineering
+
+مثلاً:
+
+Analytics Health
+Database Health
+Tracking Endpoint Health
+Contact API Health
+Email Service Health
+
+اما نه به شکل SOC.
+
+مثلاً Dashboard بتواند بگوید:
+
+System Health
+
+Analytics       Healthy
+Contact API     Healthy
+Email           Healthy
+Database        Healthy
+
+Last tracking event:
+2 min ago
+
+چیزی که من اضافه می‌کنم و هر دو تقریباً کم دارند
+Data Quality & Metric Integrity
+
+این برای چنین داشبوردی خیلی مهم است.
+
+مثلاً باید مشخص کنیم:
+
+Visitor
+
+چه چیزی یک Visitor محسوب می‌شود؟
+
+Session
+
+Session چه زمانی شروع و چه زمانی تمام می‌شود؟
+
+Conversion
+
+آیا:
+
+Contact Form Submit
+
+conversion است یا:
+
+Successful Contact Stored
+
+؟
+
+من دومی را پیشنهاد می‌کنم.
+
+Bounce Rate
+
+تعریف دقیقش چیست؟
+
+Returning Visitor
+
+بر اساس چه anonymous identifier؟
+
+Project Conversion
+Project View → Successful Contact
+
+در چه window زمانی؟
+
+این‌ها اگر تعریف نشوند، داشبورد ممکن است عددهای ظاهراً حرفه‌ای ولی غلط نشان بدهد.
+
+
+پیشنهاد من برای Navigation نهایی
+
+من حتی Navigation فایل اول را کمی تغییر می‌دهم:
+
+Dashboard
+
+Analytics
+├── Overview
+├── Visitors
+├── Pages
+├── Traffic
+├── Projects
+└── Performance
+
+Contacts
+
+Security
+
+Settings
+
+نه اینکه برای هر metric یک صفحه جدا بسازیم.

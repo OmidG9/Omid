@@ -1,14 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Send, Mail, MessageSquare, User } from 'lucide-react';
 import { ContactFormData } from '@/lib/contactSchema';
+import { analytics } from '@/lib/analytics/client';
 
 export default function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const viewSent = useRef(false);
+  const startSent = useRef(false);
+  const openedAt = useRef<number>(0);
+  const startedAt = useRef<number>(0);
+
+  useEffect(() => {
+    if (viewSent.current) return;
+    viewSent.current = true;
+    openedAt.current = performance.now();
+    analytics.formView();
+  }, []);
 
   const {
     register,
@@ -17,9 +29,22 @@ export default function ContactForm() {
     formState: { errors },
   } = useForm<ContactFormData>();
 
+  const onFocusFirst = () => {
+    if (startSent.current) return;
+    startSent.current = true;
+    startedAt.current = performance.now();
+    analytics.formStart({
+      formTimeMs: startedAt.current ? Math.round(startedAt.current - openedAt.current) : undefined,
+    });
+  };
+
   const onSubmit = async (data: ContactFormData) => {
     setSubmitting(true);
     try {
+      const elapsed = () => {
+        const base = startedAt.current || openedAt.current;
+        return base ? Math.round(performance.now() - base) : null;
+      };
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,10 +56,13 @@ export default function ContactForm() {
       if (json.ok) {
         setSuccess(true);
         reset();
+        analytics.formSuccess({ formTimeMs: elapsed() ?? undefined });
       } else {
+        analytics.formError('SERVER_ERROR', { formTimeMs: elapsed() ?? undefined });
         toast.error('ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
       }
     } catch {
+      analytics.formError('SERVER_ERROR');
       toast.error('ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
     } finally {
       setSubmitting(false);
@@ -80,6 +108,7 @@ export default function ContactForm() {
           id="name"
           type="text"
           placeholder="امید قنبری"
+          onFocus={onFocusFirst}
           className={`input-field ${errors.name ? 'border-red-500/60 focus:ring-red-500' : ''}`}
           {...register('name', {
             required: 'نام الزامی است',

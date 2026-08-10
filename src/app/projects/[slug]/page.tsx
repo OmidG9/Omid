@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Container from '@/components/ui/Container';
 import Gallery from '@/components/projects/Gallery';
+import ProjectViewTracker from '@/components/analytics/ProjectViewTracker';
 import { getCategoryStyle } from '@/lib/categoryColors';
 
 interface Props {
@@ -63,6 +64,7 @@ export default function ProjectDetailPage({ params }: Props) {
   return (
     <>
       <Navbar />
+      <ProjectViewTracker slug={project.slug} />
       <main className="min-h-screen bg-slate-950 pt-20">
         {/* Hero band */}
         <div className="relative overflow-hidden bg-linear-to-b from-slate-900 to-slate-950 border-b border-slate-800/60 py-16">

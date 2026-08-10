@@ -12,6 +12,10 @@ const IntroOverlay = dynamic(() => import('@/components/IntroOverlay'), {
   ssr: false,
 });
 
+const AnalyticsTracker = dynamic(() => import('@/components/analytics/AnalyticsTracker'), {
+  ssr: false,
+});
+
 const BASE_URL = 'https://omidghanbari.dev';
 
 export const metadata: Metadata = {
@@ -95,6 +99,7 @@ export default function RootLayout({
     <html lang="fa" dir="rtl">
       <body className="bg-slate-950 text-slate-100 antialiased">
         <IntroOverlay />
+        <AnalyticsTracker />
         {children}
         <Toaster
           position="bottom-center"
