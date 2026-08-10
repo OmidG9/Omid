@@ -14,7 +14,7 @@ import portfolio from '@/data/portfolio';
 
 const socialIcons: Record<string, React.ElementType> = {
   GitHub: Github,
-  LinkedIn: Linkedin,
+  // LinkedIn: Linkedin,
   Telegram: Send,
 };
 

@@ -31,11 +31,11 @@ const contactInfo = [
 
 const socialLinks = [
   { icon: Github, label: 'GitHub', href: 'https://github.com/OmidG9' },
-  {
-    icon: Linkedin,
-    label: 'LinkedIn',
-    href: 'https://linkedin.com/in/USERNAME',
-  },
+  // {
+  //   icon: Linkedin,
+  //   label: 'LinkedIn',
+  //   href: 'https://linkedin.com/in/USERNAME',
+  // },
   { icon: Send, label: 'Telegram', href: 'https://t.me/hope3179' },
 ];
 
