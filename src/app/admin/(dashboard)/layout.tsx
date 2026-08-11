@@ -1,7 +1,7 @@
 import AdminShell from '@/components/admin/AdminShell';
 
 export const metadata = {
-  title: 'Admin',
+  title: 'مدیریت',
 };
 
 export const dynamic = 'force-dynamic';

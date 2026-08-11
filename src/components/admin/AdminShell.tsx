@@ -33,25 +33,25 @@ interface NavSection {
 }
 
 const NAV: NavSection[] = [
-  { group: null, items: [{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard }] },
+  { group: null, items: [{ href: '/admin', label: 'داشبورد', icon: LayoutDashboard }] },
   {
-    group: 'Analytics',
+    group: 'تحلیل آمار',
     items: [
-      { href: '/admin/analytics/overview', label: 'Overview', icon: BarChart3 },
-      { href: '/admin/analytics/visitors', label: 'Visitors', icon: Users },
-      { href: '/admin/analytics/pages', label: 'Pages', icon: FileText },
-      { href: '/admin/analytics/traffic', label: 'Traffic', icon: TrendingUp },
-      { href: '/admin/analytics/projects', label: 'Projects', icon: FolderKanban },
-      { href: '/admin/analytics/devices', label: 'Devices', icon: MonitorSmartphone },
-      { href: '/admin/analytics/performance', label: 'Performance', icon: Gauge },
+      { href: '/admin/analytics/overview', label: 'نمای کلی', icon: BarChart3 },
+      { href: '/admin/analytics/visitors', label: 'بازدیدکنندگان', icon: Users },
+      { href: '/admin/analytics/pages', label: 'صفحات', icon: FileText },
+      { href: '/admin/analytics/traffic', label: 'ترافیک', icon: TrendingUp },
+      { href: '/admin/analytics/projects', label: 'پروژه‌ها', icon: FolderKanban },
+      { href: '/admin/analytics/devices', label: 'دستگاه‌ها', icon: MonitorSmartphone },
+      { href: '/admin/analytics/performance', label: 'عملکرد', icon: Gauge },
     ],
   },
   {
     group: null,
     items: [
-      { href: '/admin/contacts', label: 'Contacts', icon: Inbox },
-      { href: '/admin/security', label: 'Security', icon: ShieldCheck },
-      { href: '/admin/settings', label: 'Settings', icon: Settings },
+      { href: '/admin/contacts', label: 'تماس‌ها', icon: Inbox },
+      { href: '/admin/security', label: 'امنیت', icon: ShieldCheck },
+      { href: '/admin/settings', label: 'تنظیمات', icon: Settings },
     ],
   },
 ];
@@ -91,7 +91,7 @@ export default function AdminShell({
           </div>
           <div className="leading-tight">
             <p className="text-sm font-bold text-slate-100">GhanbariOmid</p>
-            <p className="text-[11px] text-slate-500">Command Center</p>
+            <p className="text-[11px] text-slate-500">مرکز فرماندهی</p>
           </div>
         </Link>
       </div>
@@ -140,7 +140,7 @@ export default function AdminShell({
           className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
         >
           <LogOut size={16} />
-          Sign out
+          خروج از حساب
         </button>
       </div>
     </div>
@@ -149,7 +149,7 @@ export default function AdminShell({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 lg:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-64 shrink-0 border-r border-slate-800/80 bg-slate-900/40 sticky top-0 h-screen">
+      <aside className="hidden lg:block w-64 shrink-0 border-l border-slate-800/80 bg-slate-900/40 sticky top-0 h-screen">
         {sidebar}
       </aside>
 
@@ -157,7 +157,7 @@ export default function AdminShell({
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 shadow-2xl">
+          <aside className="absolute inset-y-0 right-0 w-64 bg-slate-900 border-l border-slate-800 shadow-2xl">
             {sidebar}
           </aside>
         </div>
@@ -169,18 +169,20 @@ export default function AdminShell({
           <button
             onClick={() => setOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-slate-800 text-slate-400"
-            aria-label="Open navigation"
+            aria-label="باز کردن منوی ناوبری"
           >
             <Menu size={20} />
           </button>
           <h2 className="text-sm font-medium text-slate-300 hidden sm:block">
             {NAV.flatMap((s) => s.items)
               .find((i) => isActive(pathname, i.href))
-              ?.label ?? 'Dashboard'}
+              ?.label ?? 'داشبورد'}
           </h2>
           <div className="flex-1" />
           <span className="text-[11px] text-slate-600 hidden md:inline">
-            {newRequests > 0 ? `${newRequests} new request(s)` : 'All caught up'}
+            {newRequests > 0
+              ? `${new Intl.NumberFormat('fa-IR').format(newRequests)} درخواست جدید`
+              : 'همه‌چیز به‌روز است'}
           </span>
         </header>
 

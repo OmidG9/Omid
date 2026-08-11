@@ -75,9 +75,9 @@ export function resolveRange(mode: string, fromParam?: string, toParam?: string)
 }
 
 export const DATE_RANGE_PRESETS = [
-  { id: 'today', label: 'Today' },
-  { id: '7', label: '7 Days' },
-  { id: '30', label: '30 Days' },
-  { id: '90', label: '90 Days' },
-  { id: 'custom', label: 'Custom' },
+  { id: 'today', label: 'امروز' },
+  { id: '7', label: '۷ روز' },
+  { id: '30', label: '۳۰ روز' },
+  { id: '90', label: '۹۰ روز' },
+  { id: 'custom', label: 'سفارشی' },
 ] as const;

@@ -128,6 +128,7 @@ export default async function ContactsPage({
     if (searchParams.from) params.set('from', searchParams.from);
     if (searchParams.to) params.set('to', searchParams.to);
     if (searchParams.q) params.set('q', searchParams.q);
+    if (searchParams.status && searchParams.status !== 'ALL') params.set('status', searchParams.status);
     params.set(name, value);
     return `/admin/contacts?${params.toString()}`;
   }

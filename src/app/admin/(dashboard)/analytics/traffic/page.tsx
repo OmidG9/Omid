@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/admin/StateViews';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
+import { formatNumber, SOURCE_LABELS } from '@/lib/utils/fa';
 
 const SOURCE_COLORS: Record<string, string> = {
   direct: '#3b82f6',
@@ -27,22 +28,22 @@ export default async function AnalyticsTrafficPage({
   return (
     <div>
       <PageHeader
-        title="Traffic"
-        description={`Source channels · ${range.fromKey} → ${range.toKey}`}
+        title="ترافیک"
+        description={`کانال‌های منبع · ${range.fromKey} تا ${range.toKey}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 
       {data.sources.length === 0 ? (
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/50">
-          <EmptyState title="No traffic data yet" />
+          <EmptyState title="هنوز دادهٔ ترافیکی ثبت نشده" />
         </div>
       ) : (
         <div className="space-y-4">
-          <Card title="Source Channels">
+          <Card title="کانال‌های منبع">
             <DonutChart
-              data={data.sources.map((s) => ({ key: s.key, value: s.value, color: SOURCE_COLORS[s.key] ?? '#64748b' }))}
-              centerValue={data.sources.reduce((a, s) => a + s.value, 0).toLocaleString()}
-              centerLabel="visits"
+              data={data.sources.map((s) => ({ key: SOURCE_LABELS[s.key] ?? s.key, value: s.value, color: SOURCE_COLORS[s.key] ?? '#64748b' }))}
+              centerValue={formatNumber(data.sources.reduce((a, s) => a + s.value, 0))}
+              centerLabel="بازدید"
             />
           </Card>
         </div>

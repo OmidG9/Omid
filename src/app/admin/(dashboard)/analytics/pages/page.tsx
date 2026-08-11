@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/admin/StateViews';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
+import { formatNumber, formatDateKey } from '@/lib/utils/fa';
 
 export default async function AnalyticsPagesPage({
   searchParams,

@@ -19,6 +19,13 @@ import { HealthBadge } from '@/components/admin/StatusBadge';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getOverview } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
+import {
+  formatNumber,
+  formatPercent,
+  formatDateKey,
+  SOURCE_LABELS,
+  DEVICE_LABELS,
+} from '@/lib/utils/fa';
 
 const SOURCE_COLORS: Record<string, string> = {
   direct: '#3b82f6',
@@ -49,34 +56,34 @@ export default async function AdminDashboardPage({
   return (
     <div>
       <PageHeader
-        title="Dashboard"
-        description={`Overview · ${data.fromKey} → ${data.toKey} · ${data.days} day${data.days > 1 ? 's' : ''}`}
+        title="داشبورد"
+        description={`نمای کلی · ${formatDateKey(data.fromKey)} تا ${formatDateKey(data.toKey)} · ${formatNumber(data.days)} روز`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 
       {!hasData ? (
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/50">
           <EmptyState
-            title="No analytics yet"
-            description="The tracking SDK is active. Data appears here as soon as the first page view is recorded."
+            title="هنوز آماری ثبت نشده"
+            description="اس‌دی‌کی ردیابی فعال است. به‌محض ثبت اولین بازدید صفحه، داده‌ها اینجا نمایش داده می‌شوند."
           />
         </div>
       ) : (
         <div className="space-y-5">
           {/* Metric cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-            <MetricCard label="Visitors" value={metrics.visitors.toLocaleString()} icon={Users} change={compare.visitors} accent />
-            <MetricCard label="Page Views" value={metrics.pageViews.toLocaleString()} icon={Eye} change={compare.pageViews} />
-            <MetricCard label="Sessions" value={metrics.sessions.toLocaleString()} icon={Activity} />
-            <MetricCard label="Project Views" value={metrics.projectViews.toLocaleString()} icon={TrendingUp} change={compare.projectViews} />
-            <MetricCard label="Contacts" value={metrics.contacts.toLocaleString()} icon={Inbox} change={compare.contacts} />
+            <MetricCard label="بازدیدکنندگان" value={formatNumber(metrics.visitors)} icon={Users} change={compare.visitors} accent />
+            <MetricCard label="بازدید صفحات" value={formatNumber(metrics.pageViews)} icon={Eye} change={compare.pageViews} />
+            <MetricCard label="نشست‌ها" value={formatNumber(metrics.sessions)} icon={Activity} />
+            <MetricCard label="بازدید پروژه‌ها" value={formatNumber(metrics.projectViews)} icon={TrendingUp} change={compare.projectViews} />
+            <MetricCard label="تماس‌ها" value={formatNumber(metrics.contacts)} icon={Inbox} change={compare.contacts} />
           </div>
 
           {/* Alerts + insights */}
           {(data.alerts.length > 0 || data.insights.length > 0) && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {data.alerts.length > 0 && (
-                <Card title="Alerts" action={<HealthBadge status={health} />}>
+                <Card title="هشدارها" action={<HealthBadge status={health} />}>
                   <ul className="space-y-2">
                     {data.alerts.map((a, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-amber-300/90">
@@ -88,7 +95,7 @@ export default async function AdminDashboardPage({
                 </Card>
               )}
               {data.insights.length > 0 && (
-                <Card title="Insights">
+                <Card title="بینش‌ها">
                   <ul className="space-y-2">
                     {data.insights.map((a, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
@@ -103,65 +110,65 @@ export default async function AdminDashboardPage({
           )}
 
           {/* Traffic series */}
-          <Card title="Traffic" subtitle="Visitors · Sessions · Page views per day">
+          <Card title="ترافیک" subtitle="بازدیدکنندگان · نشست‌ها · بازدید صفحات به تفکیک روز">
             <div className="grid grid-cols-3 gap-2 mb-3 text-[11px] text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> Visitors</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-400" /> Sessions</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-600" /> Page views</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> بازدیدکنندگان</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-400" /> نشست‌ها</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-600" /> بازدید صفحات</span>
             </div>
             <div className="space-y-2">
-              <AnalyticsChart values={data.series.map((s) => s.visitors)} color="#3b82f6" labels={data.series.map((s) => s.date.slice(5))} />
+              <AnalyticsChart values={data.series.map((s) => s.visitors)} color="#3b82f6" labels={data.series.map((s) => formatDateKey(s.date).slice(5))} />
               <AnalyticsChart values={data.series.map((s) => s.pageViews)} color="#475569" showArea={false} />
             </div>
           </Card>
 
           {/* Breakdowns */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            <Card title="Top Pages">
+            <Card title="پربازدیدترین صفحات">
               <BarList data={data.topPages} />
             </Card>
-            <Card title="Top Projects">
+            <Card title="پربازدیدترین پروژه‌ها">
               <BarList data={data.topProjects} />
             </Card>
-            <Card title="Traffic Sources">
+            <Card title="منابع ترافیک">
               <DonutChart
-                data={data.topSources.map((s) => ({ key: s.key, value: s.value, color: SOURCE_COLORS[s.key] ?? '#64748b' }))}
-                centerValue={metrics.visitors.toLocaleString()}
-                centerLabel="visitors"
+                data={data.topSources.map((s) => ({ key: SOURCE_LABELS[s.key] ?? s.key, value: s.value, color: SOURCE_COLORS[s.key] ?? '#64748b' }))}
+                centerValue={formatNumber(metrics.visitors)}
+                centerLabel="بازدیدکننده"
               />
             </Card>
-            <Card title="Devices">
+            <Card title="دستگاه‌ها">
               <DonutChart
                 data={data.topDevices.map((d) => ({
-                  key: d.key,
+                  key: DEVICE_LABELS[d.key] ?? d.key,
                   value: d.value,
                   color: { desktop: '#3b82f6', mobile: '#22d3ee', tablet: '#a78bfa' }[d.key] ?? '#64748b',
                 }))}
-                centerValue={metrics.visitors.toLocaleString()}
-                centerLabel="visitors"
+                centerValue={formatNumber(metrics.visitors)}
+                centerLabel="بازدیدکننده"
               />
             </Card>
-            <Card title="Top Referrers">
-              <BarList data={data.topReferrers} emptyTitle="No external referrers yet" />
+            <Card title="منابع ارجاع‌دهنده">
+              <BarList data={data.topReferrers} emptyTitle="هنوز ارجاع خارجی ثبت نشده" />
             </Card>
-            <Card title="Form Funnel" subtitle="View → Start → Success">
+            <Card title="قیف فرم" subtitle="بازدید ← شروع ← موفقیت">
               <ul className="space-y-2.5">
-                <FunnelRow label="Form views" value={metrics.formViews} />
-                <FunnelRow label="Form starts" value={metrics.formStarts} />
-                <FunnelRow label="Successful submissions" value={metrics.formSuccess} />
-                <FunnelRow label="Errors" value={metrics.formErrors} />
+                <FunnelRow label="بازدید از فرم" value={metrics.formViews} />
+                <FunnelRow label="شروع فرم" value={metrics.formStarts} />
+                <FunnelRow label="ارسال موفق" value={metrics.formSuccess} />
+                <FunnelRow label="خطاها" value={metrics.formErrors} />
               </ul>
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                <Stat label="Conversion" value={`${metrics.conversionRate.toFixed(1)}%`} />
-                <Stat label="Start rate" value={`${metrics.startRate.toFixed(1)}%`} />
-                <Stat label="Abandonment" value={`${metrics.abandonmentRate.toFixed(1)}%`} />
+                <Stat label="نرخ تبدیل" value={formatPercent(metrics.conversionRate)} />
+                <Stat label="نرخ شروع" value={formatPercent(metrics.startRate)} />
+                <Stat label="رهاسازی" value={formatPercent(metrics.abandonmentRate)} />
               </div>
             </Card>
           </div>
 
           <div className="text-xs text-slate-600">
             <Link href="/admin/analytics/overview" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">
-              Open full analytics →
+              مشاهده آمار کامل ←
             </Link>
           </div>
         </div>
@@ -174,7 +181,7 @@ function FunnelRow({ label, value }: { label: string; value: number }) {
   return (
     <li className="flex items-center justify-between text-xs">
       <span className="text-slate-400">{label}</span>
-      <span className="text-slate-200 font-medium tabular-nums">{value.toLocaleString()}</span>
+      <span className="text-slate-200 font-medium tabular-nums">{formatNumber(value)}</span>
     </li>
   );
 }

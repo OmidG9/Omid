@@ -4,6 +4,7 @@ import { HealthBadge } from '@/components/admin/StatusBadge';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getVisitors } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
+import { formatNumber, SOURCE_LABELS, DEVICE_LABELS } from '@/lib/utils/fa';
 
 export default async function AnalyticsVisitorsPage({
   searchParams,
@@ -16,49 +17,49 @@ export default async function AnalyticsVisitorsPage({
   return (
     <div>
       <PageHeader
-        title="Visitors"
-        description={`Recent sessions · ${range.fromKey} → ${range.toKey}`}
+        title="بازدیدکنندگان"
+        description={`نشست‌های اخیر · ${range.fromKey} تا ${range.toKey}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 
       {sessions.length === 0 ? (
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/50">
           <EmptyState
-            title="No sessions yet"
-            description="Sessions appear here when visitors interact with the site."
+            title="هنوز نشستی ثبت نشده"
+            description="به‌محض تعامل بازدیدکنندگان با سایت، نشست‌ها اینجا نمایش داده می‌شوند."
           />
         </div>
       ) : (
         <div className="space-y-3">
-          <Card title={`Sessions (${sessions.length})`}>
+          <Card title={`نشست‌ها (${formatNumber(sessions.length)})`}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
-                    <th className="pb-2 pr-2 font-medium">Source</th>
-                    <th className="pb-2 pr-2 font-medium">Landing</th>
-                    <th className="pb-2 pr-2 font-medium">Device</th>
-                    <th className="pb-2 pr-2 font-medium">Pages</th>
-                    <th className="pb-2 pr-2 font-medium">Duration</th>
-                    <th className="pb-2 pr-2 font-medium">Last activity</th>
+                  <tr className="text-right text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+                    <th className="pb-2 pe-2 font-medium">منبع</th>
+                    <th className="pb-2 pe-2 font-medium">صفحه فرود</th>
+                    <th className="pb-2 pe-2 font-medium">دستگاه</th>
+                    <th className="pb-2 pe-2 font-medium">صفحات</th>
+                    <th className="pb-2 pe-2 font-medium">مدت‌زمان</th>
+                    <th className="pb-2 pe-2 font-medium">آخرین فعالیت</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sessions.map((s) => (
                     <tr key={s.id} className="border-b border-slate-800/50 text-xs text-slate-400">
-                      <td className="py-2 pr-2 capitalize">{s.source}</td>
-                      <td className="py-2 pr-2 text-slate-300 max-w-[160px] truncate" title={s.landingPage}>{s.landingPage}</td>
-                      <td className="py-2 pr-2 capitalize">{s.deviceType}</td>
-                      <td className="py-2 pr-2 tabular-nums">{s.pageViews}</td>
-                      <td className="py-2 pr-2 tabular-nums">{formatDuration(s.durationMs)}</td>
-                      <td className="py-2 pr-2 tabular-nums">{new Date(s.lastActivityAt).toLocaleString('fa-IR')}</td>
+                      <td className="py-2 pe-2">{SOURCE_LABELS[s.source] ?? s.source}</td>
+                      <td className="py-2 pe-2 text-slate-300 max-w-[160px] truncate" title={s.landingPage} dir="ltr">{s.landingPage}</td>
+                      <td className="py-2 pe-2">{DEVICE_LABELS[s.deviceType] ?? s.deviceType}</td>
+                      <td className="py-2 pe-2 tabular-nums">{formatNumber(s.pageViews)}</td>
+                      <td className="py-2 pe-2 tabular-nums">{formatDuration(s.durationMs)}</td>
+                      <td className="py-2 pe-2 tabular-nums">{new Date(s.lastActivityAt).toLocaleString('fa-IR')}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </Card>
-          <div className="text-xs text-slate-600">Showing the most recent {sessions.length} sessions in range.</div>
+          <div className="text-xs text-slate-600">نمایش {formatNumber(sessions.length)} نشست اخیر در این بازه.</div>
         </div>
       )}
     </div>
@@ -68,7 +69,7 @@ export default async function AnalyticsVisitorsPage({
 function formatDuration(ms: number): string {
   if (!ms) return '—';
   const sec = Math.floor(ms / 1000);
-  if (sec < 60) return `${sec}s`;
+  if (sec < 60) return `${formatNumber(sec)} ثانیه`;
   const min = Math.floor(sec / 60);
-  return `${min}m ${sec % 60}s`;
+  return `${formatNumber(min)} دقیقه و ${formatNumber(sec % 60)} ثانیه`;
 }

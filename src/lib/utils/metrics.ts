@@ -4,6 +4,8 @@
  * misleading percentages.
  */
 
+// import { formatNumber } from '@/lib/utils/fa';
+
 export interface PercentageChange {
   change: number | null; // percentage points, null when not meaningful
   direction: 'up' | 'down' | 'flat' | 'na';
@@ -27,10 +29,10 @@ export function calculatePercentageChange(
 }
 
 export function formatChange(c: PercentageChange): string {
-  if (c.direction === 'na' && c.delta > 0) return 'new';
+  if (c.direction === 'na' && c.delta > 0) return 'جدید';
   if (c.change === null) return '—';
   const sign = c.change > 0 ? '+' : '';
-  return `${sign}${c.change.toFixed(1)}%`;
+  return `${sign}${formatNumber(c.change)}٪`;
 }
 
 export function pct(value: number, total: number): number {

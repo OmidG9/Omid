@@ -19,6 +19,7 @@ import {
   topEntries,
 } from '@/lib/utils/metrics';
 import { shortHost } from '@/lib/analytics/userAgent';
+import { formatNumber, SOURCE_LABELS } from '@/lib/utils/fa';
 
 export interface OverviewData {
   fromKey: string;
@@ -202,31 +203,37 @@ export async function getOverview(range: {
   const insights: string[] = [];
   const topSource = topSources[0];
   if (topSource) {
-    insights.push(`${topSource.value} visits came via ${topSource.key} — the top channel this period.`);
+    insights.push(
+      `${formatNumber(topSource.value)} بازدید از طریق «${
+        SOURCE_LABELS[topSource.key as keyof typeof SOURCE_LABELS] ?? topSource.key
+      }» ثبت شد — کانال اصلی این بازه.`
+    );
   }
   if (c.returningVisitors > 0) {
     const ratio = Math.round((c.returningVisitors / Math.max(1, c.visitors)) * 100);
-    insights.push(`${ratio}% of visitors were returning this period.`);
+    insights.push(`${formatNumber(ratio)}٪ از بازدیدکنندگان در این بازه بازگشتی بوده‌اند.`);
   }
   if (c.projectViews > 0 && c.pageViews > 0) {
-    insights.push(`${c.projectViews} project views across the portfolio.`);
+    insights.push(`${formatNumber(c.projectViews)} بازدید از پروژه‌های نمونه‌کار ثبت شده است.`);
   }
 
   // Alerts
   const alerts: string[] = [];
   if (metrics.spam > 0 && metrics.contacts + metrics.spam > 0) {
     const spamRatio = (metrics.spam / (metrics.contacts + metrics.spam)) * 100;
-    if (spamRatio >= 10) alerts.push(`${Math.round(spamRatio)}% of submissions were flagged as spam.`);
+    if (spamRatio >= 10)
+      alerts.push(`${formatNumber(Math.round(spamRatio))}٪ از ارسال‌ها به‌عنوان اسپم علامت‌گذاری شده‌اند.`);
   }
   if (metrics.formErrors > 0 && metrics.formViews > 0) {
     const err = (metrics.formErrors / metrics.formViews) * 100;
-    if (err >= 10) alerts.push(`Form error rate is ${Math.round(err)}% — check config or SMTP.`);
+    if (err >= 10)
+      alerts.push(`نرخ خطای فرم ${formatNumber(Math.round(err))}٪ است — تنظیمات یا SMTP را بررسی کنید.`);
   }
   if (metrics.abandonmentRate >= 60 && metrics.formStarts > 0) {
-    alerts.push(`Form abandonment is ${Math.round(metrics.abandonmentRate)}%.`);
+    alerts.push(`نرخ رهاسازی فرم ${formatNumber(Math.round(metrics.abandonmentRate))}٪ است.`);
   }
   if (c.visitors > 0 && p.visitors > 0 && c.visitors < p.visitors * 0.5) {
-    alerts.push('Traffic dropped by more than 50% vs the previous period.');
+    alerts.push('ترافیک نسبت به دورهٔ قبل بیش از ۵۰٪ کاهش یافته است.');
   }
 
   return {
