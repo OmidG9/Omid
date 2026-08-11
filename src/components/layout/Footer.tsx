@@ -28,7 +28,7 @@ export default function Footer() {
               href="https://github.com/OmidG9"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="GitHub Profile"
+              aria-label="پروفایل گیت‌هاب"
               className="flex items-center gap-1.5 hover:text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
             >
               <Github size={16} />

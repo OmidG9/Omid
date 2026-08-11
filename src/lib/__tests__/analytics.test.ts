@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getStore, resetStoreForTests } from '@/lib/db';
-import { trackEvent } from '@/lib/analytics/tracking';
+import { trackEvent, isTrackedPath } from '@/lib/analytics/tracking';
 import {
   getOverview,
   getAnalyticsSubpage,
@@ -8,9 +8,10 @@ import {
   getHealth,
 } from '@/lib/services/analyticsService';
 import { dateKey, DAY_MS, startOfDayUtc } from '@/lib/utils/date';
-import { calculatePercentageChange } from '@/lib/utils/metrics';
+import { calculatePercentageChange, aggregateWeekly } from '@/lib/utils/metrics';
 import type { DailyMetric, AnalyticsEvent } from '@/types/analytics';
 import { emptyDailyMetric } from '@/lib/db/daily';
+import { getHealthSnapshot } from '@/lib/services/healthService';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537.36';
 
@@ -29,6 +30,9 @@ async function track(partial: {
   errorType?: string;
   path?: string;
   referrer?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
 }) {
   const ts = partial.timestamp ?? Date.now();
   return trackEvent({
@@ -38,7 +42,13 @@ async function track(partial: {
       sessionId: partial.sessionId ?? `sess-${partial.visitorId}`,
       projectSlug: partial.projectSlug,
       errorType: partial.errorType,
-      context: { path: partial.path ?? '/', referrer: partial.referrer ?? null },
+      context: {
+        path: partial.path ?? '/',
+        referrer: partial.referrer ?? null,
+        utmSource: partial.utmSource ?? null,
+        utmMedium: partial.utmMedium ?? null,
+        utmCampaign: partial.utmCampaign ?? null,
+      },
     },
     userAgent: UA,
   });
@@ -82,6 +92,37 @@ describe('analytics service', () => {
     expect(data.metrics.formViews).toBe(1);
     expect(data.metrics.formStarts).toBe(1);
     expect(data.metrics.formSuccess).toBe(1);
+  });
+
+  it('tracks CONTACT_FORM_SUBMIT as its own funnel step (§38)', async () => {
+    await track({ eventName: 'CONTACT_FORM_VIEW', visitorId: 'v1' });
+    await track({ eventName: 'CONTACT_FORM_START', visitorId: 'v1' });
+    await track({ eventName: 'CONTACT_FORM_SUBMIT', visitorId: 'v1' });
+    await track({ eventName: 'CONTACT_FORM_SUCCESS', visitorId: 'v1' });
+
+    const data = await getOverview(rangeFor());
+    expect(data.metrics.formSubmits).toBe(1);
+  });
+
+  it('classifies a direct page view as direct source (§15)', async () => {
+    await track({ eventName: 'PAGE_VIEW', visitorId: 'v1', path: '/', referrer: null });
+
+    const data = await getOverview(rangeFor());
+    expect(data.topSources).toContainEqual({ key: 'direct', value: 1 });
+  });
+
+  it('classifies a qualifying UTM triplet as campaign source (§15)', async () => {
+    await track({
+      eventName: 'PAGE_VIEW',
+      visitorId: 'v1',
+      path: '/',
+      utmSource: 'newsletter',
+      utmMedium: 'email',
+      utmCampaign: 'spring',
+    });
+
+    const data = await getOverview(rangeFor());
+    expect(data.topSources).toContainEqual({ key: 'campaign', value: 1 });
   });
 
   it('computes conversion from stored contacts over form views', async () => {
@@ -145,6 +186,27 @@ describe('growth / percentage change (§21)', () => {
   });
 });
 
+describe('weekly aggregation (§20)', () => {
+  it('groups daily series into week buckets and sums metrics', () => {
+    const series = [
+      { date: '2026-01-01', visitors: 3, sessions: 2, pageViews: 5 },
+      { date: '2026-01-02', visitors: 4, sessions: 3, pageViews: 6 },
+      { date: '2026-01-08', visitors: 1, sessions: 1, pageViews: 2 },
+    ];
+    const weekly = aggregateWeekly(series);
+    expect(weekly.length).toBe(2);
+    expect(weekly[0].visitors).toBe(7);
+    expect(weekly[0].sessions).toBe(5);
+    expect(weekly[1].visitors).toBe(1);
+    // Buckets are ordered oldest → newest.
+    expect(weekly[0].date < weekly[1].date).toBe(true);
+  });
+
+  it('returns an empty array for an empty series', () => {
+    expect(aggregateWeekly([])).toEqual([]);
+  });
+});
+
 describe('visitor deduplication across days', () => {
   it('counts a returning visitor correctly when their first event predates the range', async () => {
     resetStoreForTests();
@@ -160,5 +222,41 @@ describe('visitor deduplication across days', () => {
     expect(data.metrics.returningVisitors).toBe(1);
     const dm = await getStore().getDailyMetrics([dateKey(Date.now())]);
     expect(dm[0]?.visitors).toBe(1);
+  });
+});
+
+describe('health snapshot (§6.1)', () => {
+  it('reports the most recent analytics event age', async () => {
+    resetStoreForTests();
+    const now = Date.now();
+    await track({ eventName: 'PAGE_VIEW', visitorId: 'h1', path: '/' });
+
+    const health = await getHealthSnapshot(now + 5_000);
+    expect(health.lastEventAt).toBeGreaterThan(0);
+    expect(health.lastEventAgeSec).toBeGreaterThanOrEqual(0);
+    expect(health.contact.ageSec).toBeNull();
+    expect(typeof health.contact.errorRatePct).toBe('number');
+  });
+});
+
+describe('tracked path policy (admin excluded)', () => {
+  it('records public landing and project pages', () => {
+    expect(isTrackedPath('/')).toBe(true);
+    expect(isTrackedPath('/projects')).toBe(true);
+    expect(isTrackedPath('/projects/nakhsha')).toBe(true);
+  });
+
+  it('excludes dashboard and internal routes', () => {
+    expect(isTrackedPath('/admin')).toBe(false);
+    expect(isTrackedPath('/admin/analytics/overview')).toBe(false);
+    expect(isTrackedPath('/admin/login')).toBe(false);
+    expect(isTrackedPath('/api/admin/settings')).toBe(false);
+    expect(isTrackedPath('/_next/static/css')).toBe(false);
+  });
+
+  it('drops unknown paths', () => {
+    expect(isTrackedPath('/files/cv.pdf')).toBe(false);
+    expect(isTrackedPath(null)).toBe(true);
+    expect(isTrackedPath(undefined)).toBe(true);
   });
 });

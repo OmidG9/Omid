@@ -131,6 +131,7 @@ export class RedisStore implements DataStore {
     pipe.sadd(K.dmVisitors(dayKey), event.visitorId);
     pipe.sadd(isNew ? K.dmNew(dayKey) : K.dmRet(dayKey), event.visitorId);
     pipe.sadd(K.dmIndex(), dayKey);
+    pipe.set(K.lastEvent(), String(ts));
 
     const increments = metricIncrementsForEvent(
       event.eventName,
@@ -180,12 +181,14 @@ export class RedisStore implements DataStore {
     await pipe.exec();
   }
 
-  async claimDuplicate(hash: string, contactId: string): Promise<boolean> {
-    const res = await this.r.set(K.contactHash(hash), contactId, {
+  async claimDuplicate(hash: string, contactId: string, ttlSec?: number): Promise<string | null> {
+    const r = this.r;
+    const res = await r.set(K.contactHash(hash), contactId, {
       nx: true,
-      ex: TTL.DUPLICATE,
+      ex: ttlSec ?? TTL.DUPLICATE,
     });
-    return res === 'OK';
+    if (res === 'OK') return null;
+    return (await r.get<string>(K.contactHash(hash))) ?? contactId;
   }
 
   async recordSecurityEvent(ev: SecurityEvent): Promise<void> {
@@ -274,6 +277,7 @@ export class RedisStore implements DataStore {
         m.outboundClicks = num(c?.['outboundClicks']);
         m.formViews = num(c?.['formViews']);
         m.formStarts = num(c?.['formStarts']);
+        m.formSubmits = num(c?.['formSubmits']);
         m.formSuccess = num(c?.['formSuccess']);
         m.formErrors = num(c?.['formErrors']);
         m.contacts = num(c?.['contacts']);
@@ -319,6 +323,12 @@ export class RedisStore implements DataStore {
       count: limit,
     });
     return this.mgetJson<SessionRecord>(ids, K.session);
+  }
+
+  async getLastEventAt(): Promise<number> {
+    const v = await this.r.get<string>(K.lastEvent());
+    const n = Number(v ?? 0);
+    return Number.isFinite(n) ? n : 0;
   }
 
   /* ── Contacts ───────────────────────────────────────────────────────── */

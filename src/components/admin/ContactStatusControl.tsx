@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { CONTACT_STATUS } from '@/types/contacts';
 import type { ContactRequest, ContactStatus } from '@/types/contacts';
-import { Mail, ArrowRight } from 'lucide-react';
+
+const STATUS_LABELS: Record<ContactStatus, string> = {
+  NEW: 'جدید',
+  READ: 'خوانده‌شده',
+  REPLIED: 'پاسخ‌داده‌شده',
+  ARCHIVED: 'بایگانی‌شده',
+  SPAM: 'اسپم',
+};
 
 export default function ContactStatusControl({ contact }: { contact: ContactRequest }) {
   const router = useRouter();
@@ -27,10 +34,10 @@ export default function ContactStatusControl({ contact }: { contact: ContactRequ
         setStatus(next);
         router.refresh();
       } else {
-        setError(json.error ?? 'Failed to update');
+        setError(json.error ?? 'به‌روزرسانی ناموفق بود');
       }
     } catch {
-      setError('Failed to update');
+      setError('به‌روزرسانی ناموفق بود');
     } finally {
       setSaving(false);
     }
@@ -39,7 +46,7 @@ export default function ContactStatusControl({ contact }: { contact: ContactRequ
   return (
     <div>
       <div className="flex items-center gap-2 flex-wrap mb-3">
-        <span className="text-xs text-slate-500">Status:</span>
+        <span className="text-xs text-slate-500">وضعیت:</span>
         <StatusBadge status={status} />
       </div>
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -54,7 +61,7 @@ export default function ContactStatusControl({ contact }: { contact: ContactRequ
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border-transparent disabled:opacity-50'
             }`}
           >
-            {s}
+            {STATUS_LABELS[s as ContactStatus]}
           </button>
         ))}
       </div>

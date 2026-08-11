@@ -8,7 +8,7 @@ import Footer from '@/components/layout/Footer';
 import Container from '@/components/ui/Container';
 import Gallery from '@/components/projects/Gallery';
 import ProjectViewTracker from '@/components/analytics/ProjectViewTracker';
-import { getCategoryStyle } from '@/lib/categoryColors';
+import { getCategoryStyle, CATEGORY_LABELS } from '@/lib/categoryColors';
 
 interface Props {
   params: { slug: string };
@@ -97,7 +97,7 @@ export default function ProjectDetailPage({ params }: Props) {
                     key={cat}
                     className={`px-3 py-1 text-xs font-semibold rounded-full border ${getCategoryStyle(cat).tag}`}
                   >
-                    {cat}
+                    {CATEGORY_LABELS[cat] ?? cat}
                   </span>
                 ))}
               </div>

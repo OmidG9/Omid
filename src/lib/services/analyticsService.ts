@@ -19,7 +19,8 @@ import {
   topEntries,
 } from '@/lib/utils/metrics';
 import { shortHost } from '@/lib/analytics/userAgent';
-import { formatNumber, SOURCE_LABELS } from '@/lib/utils/fa';
+import { formatNumber, SOURCE_LABELS, DEVICE_LABELS } from '@/lib/utils/fa';
+import { getSettings } from '@/lib/settings';
 
 export interface OverviewData {
   fromKey: string;
@@ -37,6 +38,7 @@ export interface OverviewData {
     spam: number;
     formViews: number;
     formStarts: number;
+    formSubmits: number;
     formSuccess: number;
     formErrors: number;
     bounceRate: number;
@@ -48,8 +50,18 @@ export interface OverviewData {
   compare: {
     visitors: PercentageChange;
     pageViews: PercentageChange;
+    sessions: PercentageChange;
     contacts: PercentageChange;
     projectViews: PercentageChange;
+    conversionRate: PercentageChange;
+  };
+  previous: {
+    visitors: number;
+    pageViews: number;
+    sessions: number;
+    contacts: number;
+    projectViews: number;
+    conversionRate: number;
   };
   series: TrafficSeriesPoint[];
   dailySummary: Array<{ date: string; visitors: number; sessions: number; pageViews: number }>;
@@ -79,6 +91,7 @@ function sumDaily(list: Array<DailyMetric | undefined>): DailyMetric {
     formViews: 0,
     formStarts: 0,
     formSuccess: 0,
+    formSubmits: 0,
     formErrors: 0,
     projects: {},
     pages: {},
@@ -102,6 +115,7 @@ function sumDaily(list: Array<DailyMetric | undefined>): DailyMetric {
     acc.formViews += m.formViews;
     acc.formStarts += m.formStarts;
     acc.formSuccess += m.formSuccess;
+    acc.formSubmits += m.formSubmits;
     acc.formErrors += m.formErrors;
     for (const [k, v] of Object.entries(m.pages)) acc.pages[k] = (acc.pages[k] ?? 0) + v;
     for (const [k, v] of Object.entries(m.projects)) acc.projects[k] = (acc.projects[k] ?? 0) + v;
@@ -178,6 +192,7 @@ export async function getOverview(range: {
     formViews: c.formViews,
     formStarts: c.formStarts,
     formSuccess: c.formSuccess,
+    formSubmits: c.formSubmits,
     formErrors: c.formErrors,
     bounceRate: averageBounceRate(cur),
     conversionRate: safeRate(c.contacts, c.formViews),
@@ -217,23 +232,68 @@ export async function getOverview(range: {
     insights.push(`${formatNumber(c.projectViews)} بازدید از پروژه‌های نمونه‌کار ثبت شده است.`);
   }
 
-  // Alerts
+  // Growth insight (§22): compare visitor volume against the previous period.
+  if (c.visitors > 0) {
+    if (p.visitors === 0) {
+      insights.push('ترافیک این بازه از صفر شروع شده است — دورهٔ قبلی هیچ داده‌ای نداشت.');
+    } else {
+      const delta = ((c.visitors - p.visitors) / p.visitors) * 100;
+      if (Math.abs(delta) >= 5) {
+        insights.push(
+          `بازدیدکنندگان نسبت به دورهٔ قبل ${delta > 0 ? '' : 'کاهش '}${formatNumber(Math.abs(delta))}٪ ${
+            delta > 0 ? 'رشد داشته‌اند.' : 'داشته‌اند.'
+          }`
+        );
+      }
+    }
+  }
+
+  // Conversion drop (§22): a big drop vs previous period is worth surfacing.
+  const convC = safeRate(c.contacts, c.formViews);
+  const convP = safeRate(p.contacts, p.formViews);
+  if (convP > 0 && convC < convP * 0.5 && c.formViews > 0) {
+    insights.push('نرخ تبدیل فرم نسبت به دورهٔ قبل بیش از ۵۰٪ افت کرده است.');
+  }
+
+  // Device share (§22): dominant device type if it exceeds half of activity.
+  const topDevice = topDevices[0];
+  if (topDevice && c.visitors > 0) {
+    const share = Math.round((topDevice.value / Math.max(1, c.visitors)) * 100);
+    if (share >= 50) {
+      insights.push(
+        `${formatNumber(share)}٪ از فعالیت بر روی «${
+          DEVICE_LABELS[topDevice.key as keyof typeof DEVICE_LABELS] ?? topDevice.key
+        }» انجام شده است.`
+      );
+    }
+  }
+
+  // Alerts (§23) — thresholds read from persisted settings.
+  const settings = await getSettings();
+  const alert = {
+    trafficDropPct: settings.alertTrafficDropPct,
+    formErrorPct: settings.alertFormErrorPct,
+    spamPct: settings.alertSpamPct,
+  };
   const alerts: string[] = [];
   if (metrics.spam > 0 && metrics.contacts + metrics.spam > 0) {
     const spamRatio = (metrics.spam / (metrics.contacts + metrics.spam)) * 100;
-    if (spamRatio >= 10)
+    if (spamRatio >= alert.spamPct)
       alerts.push(`${formatNumber(Math.round(spamRatio))}٪ از ارسال‌ها به‌عنوان اسپم علامت‌گذاری شده‌اند.`);
   }
   if (metrics.formErrors > 0 && metrics.formViews > 0) {
     const err = (metrics.formErrors / metrics.formViews) * 100;
-    if (err >= 10)
+    if (err >= alert.formErrorPct)
       alerts.push(`نرخ خطای فرم ${formatNumber(Math.round(err))}٪ است — تنظیمات یا SMTP را بررسی کنید.`);
   }
   if (metrics.abandonmentRate >= 60 && metrics.formStarts > 0) {
     alerts.push(`نرخ رهاسازی فرم ${formatNumber(Math.round(metrics.abandonmentRate))}٪ است.`);
   }
-  if (c.visitors > 0 && p.visitors > 0 && c.visitors < p.visitors * 0.5) {
-    alerts.push('ترافیک نسبت به دورهٔ قبل بیش از ۵۰٪ کاهش یافته است.');
+  if (c.visitors > 0 && p.visitors > 0 && c.visitors < p.visitors * (1 - alert.trafficDropPct / 100)) {
+    alerts.push(`ترافیک نسبت به دورهٔ قبل بیش از ${formatNumber(Math.round(alert.trafficDropPct))}٪ کاهش یافته است.`);
+  }
+  if (p.visitors > 1 && c.visitors === 0) {
+    alerts.push('در این بازه هیچ بازدیدکننده‌ای ثبت نشده است.');
   }
 
   return {
@@ -244,8 +304,21 @@ export async function getOverview(range: {
     compare: {
       visitors: compare(c.visitors, p.visitors),
       pageViews: compare(c.pageViews, p.pageViews),
+      sessions: compare(c.sessions, p.sessions),
       contacts: compare(c.contacts, p.contacts),
       projectViews: compare(c.projectViews, p.projectViews),
+      conversionRate: compare(
+        safeRate(c.contacts, c.formViews),
+        safeRate(p.contacts, p.formViews)
+      ),
+    },
+    previous: {
+      visitors: p.visitors,
+      pageViews: p.pageViews,
+      sessions: p.sessions,
+      contacts: p.contacts,
+      projectViews: p.projectViews,
+      conversionRate: safeRate(p.contacts, p.formViews),
     },
     series,
     dailySummary,
@@ -304,6 +377,7 @@ export async function getPerformance(range: { fromKey: string; toKey: string }) 
   return {
     formViews: c.formViews,
     formStarts: c.formStarts,
+    formSubmits: c.formSubmits,
     formSuccess: c.formSuccess,
     formErrors: c.formErrors,
     conversionRate: safeRate(c.contacts, c.formViews),

@@ -18,6 +18,7 @@ export function emptyDailyMetric(date: string): DailyMetric {
     outboundClicks: 0,
     formViews: 0,
     formStarts: 0,
+    formSubmits: 0,
     formSuccess: 0,
     formErrors: 0,
     projects: {},
@@ -41,6 +42,7 @@ export function dailyCounterDelta(
     | 'outboundClicks'
     | 'formViews'
     | 'formStarts'
+    | 'formSubmits'
     | 'formSuccess'
     | 'formErrors'
     | 'sessions'
@@ -80,6 +82,7 @@ export function bumpDevice(map: DailyMetric['devices'], key: DeviceType): void {
     out.outboundClicks += m.outboundClicks;
     out.formViews += m.formViews;
     out.formStarts += m.formStarts;
+    out.formSubmits += m.formSubmits;
     out.formSuccess += m.formSuccess;
     out.formErrors += m.formErrors;
     for (const [k, v] of Object.entries(m.pages)) bumpMap(out.pages, k, v);
@@ -130,6 +133,9 @@ export function metricIncrementsForEvent(
       break;
     case 'CONTACT_FORM_START':
       out.push({ hash: 'c', field: 'formStarts' });
+      break;
+    case 'CONTACT_FORM_SUBMIT':
+      out.push({ hash: 'c', field: 'formSubmits' });
       break;
     case 'CONTACT_FORM_SUCCESS':
       out.push({ hash: 'c', field: 'formSuccess' });

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ExternalLink, Github, ArrowUpRight, BookOpen } from 'lucide-react';
 import { Project } from '@/data/portfolio';
-import { getCategoryStyle } from '@/lib/categoryColors';
+import { getCategoryStyle, CATEGORY_LABELS } from '@/lib/categoryColors';
 
 interface ProjectCardProps {
   project: Project;
@@ -45,7 +45,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
               key={cat}
               className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${getCategoryStyle(cat).tag}`}
             >
-              {cat}
+              {CATEGORY_LABELS[cat] ?? cat}
             </span>
           ))}
         </div>

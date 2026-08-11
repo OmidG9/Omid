@@ -1,10 +1,10 @@
-/** Category display names (Persian → English key). */
+/** Category display names (Persian labels for English keys). */
 export const CATEGORY_LABELS: Record<string, string> = {
   همه: 'همه',
-  'Full-Stack': 'Full-Stack',
-  Frontend: 'Frontend',
-  'UI/UX': 'UI/UX',
-  WordPress: 'WordPress',
+  'Full-Stack': 'فول‌استک',
+  Frontend: 'فرانت‌اند',
+  'UI/UX': 'رابط کاربری (UI/UX)',
+  WordPress: 'وردپرس',
 };
 
 interface CategoryStyle {

@@ -11,14 +11,16 @@ import {
 } from 'lucide-react';
 import { PageHeader, Card } from '@/components/admin/Card';
 import MetricCard from '@/components/admin/MetricCard';
-import AnalyticsChart from '@/components/admin/AnalyticsChart';
+import TrafficChart from '@/components/admin/TrafficChart';
 import BarList from '@/components/admin/BarList';
 import DonutChart from '@/components/admin/DonutChart';
 import { EmptyState } from '@/components/admin/StateViews';
-import { HealthBadge } from '@/components/admin/StatusBadge';
+import { HealthBadge, StatusBadge } from '@/components/admin/StatusBadge';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
-import { getOverview } from '@/lib/services/analyticsService';
+import { getOverview, getHealth } from '@/lib/services/analyticsService';
+import { getStore } from '@/lib/db';
 import { parseRange } from '@/lib/services/rangeParam';
+import type { ContactStatus } from '@/types/contacts';
 import {
   formatNumber,
   formatPercent,
@@ -43,7 +45,9 @@ export default async function AdminDashboardPage({
 }) {
   const range = parseRange(searchParams.range, searchParams.from, searchParams.to);
   const data = await getOverview(range);
-  const { metrics, compare } = data;
+  const healthData = await getHealth(range);
+  const recent = await getStore().recentContacts(5);
+  const { metrics, compare, previous } = data;
 
   const hasData = metrics.visitors > 0 || metrics.pageViews > 0 || metrics.contacts > 0;
   const health: 'healthy' | 'warning' | 'critical' =
@@ -71,12 +75,13 @@ export default async function AdminDashboardPage({
       ) : (
         <div className="space-y-5">
           {/* Metric cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-            <MetricCard label="بازدیدکنندگان" value={formatNumber(metrics.visitors)} icon={Users} change={compare.visitors} accent />
-            <MetricCard label="بازدید صفحات" value={formatNumber(metrics.pageViews)} icon={Eye} change={compare.pageViews} />
-            <MetricCard label="نشست‌ها" value={formatNumber(metrics.sessions)} icon={Activity} />
-            <MetricCard label="بازدید پروژه‌ها" value={formatNumber(metrics.projectViews)} icon={TrendingUp} change={compare.projectViews} />
-            <MetricCard label="تماس‌ها" value={formatNumber(metrics.contacts)} icon={Inbox} change={compare.contacts} />
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            <MetricCard label="بازدیدکنندگان" value={formatNumber(metrics.visitors)} icon={Users} change={compare.visitors} previousValue={formatNumber(previous.visitors)} accent />
+            <MetricCard label="بازدید صفحات" value={formatNumber(metrics.pageViews)} icon={Eye} change={compare.pageViews} previousValue={formatNumber(previous.pageViews)} />
+            <MetricCard label="نشست‌ها" value={formatNumber(metrics.sessions)} icon={Activity} change={compare.sessions} previousValue={formatNumber(previous.sessions)} />
+            <MetricCard label="بازدید پروژه‌ها" value={formatNumber(metrics.projectViews)} icon={TrendingUp} change={compare.projectViews} previousValue={formatNumber(previous.projectViews)} />
+            <MetricCard label="تماس‌ها" value={formatNumber(metrics.contacts)} icon={Inbox} change={compare.contacts} previousValue={formatNumber(previous.contacts)} />
+            <MetricCard label="نرخ تبدیل" value={formatPercent(metrics.conversionRate)} icon={MousePointerClick} change={compare.conversionRate} previousValue={formatPercent(previous.conversionRate)} />
           </div>
 
           {/* Alerts + insights */}
@@ -110,16 +115,24 @@ export default async function AdminDashboardPage({
           )}
 
           {/* Traffic series */}
-          <Card title="ترافیک" subtitle="بازدیدکنندگان · نشست‌ها · بازدید صفحات به تفکیک روز">
-            <div className="grid grid-cols-3 gap-2 mb-3 text-[11px] text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> بازدیدکنندگان</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-400" /> نشست‌ها</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-600" /> بازدید صفحات</span>
+          <Card title="ترافیک" subtitle="بازدیدکنندگان · نشست‌ها · بازدید صفحات">
+            <TrafficChart series={data.series} />
+          </Card>
+
+          {/* Recent contact requests */}
+          <RecentRequests contacts={recent} />
+
+          {/* Form Health */}
+          <Card title="سلامت فرم" subtitle="خطاها و نسبت اسپم به ارسال‌های واقعی">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <HealthStat label="ارسال‌های واقعی" value={formatNumber(healthData.contacts)} tone="ok" />
+              <HealthStat label="اسپم" value={formatNumber(healthData.spam)} tone={healthData.spamRate >= 10 ? 'bad' : 'ok'} />
+              <HealthStat label="نرخ اسپم" value={formatPercent(healthData.spamRate)} tone={healthData.spamRate >= 10 ? 'bad' : 'ok'} />
+              <HealthStat label="خطاهای فرم" value={formatNumber(healthData.formErrors)} tone={healthData.formErrors > 0 ? 'bad' : 'ok'} />
             </div>
-            <div className="space-y-2">
-              <AnalyticsChart values={data.series.map((s) => s.visitors)} color="#3b82f6" labels={data.series.map((s) => formatDateKey(s.date).slice(5))} />
-              <AnalyticsChart values={data.series.map((s) => s.pageViews)} color="#475569" showArea={false} />
-            </div>
+            {healthData.spamRate >= 10 && (
+              <p className="mt-3 text-xs text-amber-300/90">نرخ اسپم بالا است — تنظیمات تشخیص هرزنامه را بررسی کنید.</p>
+            )}
           </Card>
 
           {/* Breakdowns */}
@@ -186,11 +199,51 @@ function FunnelRow({ label, value }: { label: string; value: number }) {
   );
 }
 
+function RecentRequests({ contacts }: { contacts: { id: string; name: string; email: string; status: string; createdAt: number }[] }) {
+  if (contacts.length === 0) return null;
+  return (
+    <Card title="آخرین درخواست‌های تماس" action={<Link href="/admin/contacts" className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2">همه</Link>}>
+      <ul className="divide-y divide-slate-800/50">
+        {contacts.map((c) => (
+          <li key={c.id} className="flex items-center justify-between gap-3 py-2">
+            <Link href={`/admin/contacts/${c.id}`} className="min-w-0 flex items-center gap-2 group">
+              <span className="w-2 h-2 rounded-full bg-blue-500/70 shrink-0" />
+              <span className="text-xs text-slate-300 group-hover:text-white truncate">{c.name}</span>
+              <span className="text-[11px] text-slate-500 truncate" dir="ltr">{c.email}</span>
+            </Link>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-[11px] text-slate-600 tabular-nums">{new Date(c.createdAt).toLocaleString('fa-IR')}</span>
+              <StatusBadge status={c.status as ContactStatus} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-slate-800/40 border border-slate-800/80 p-2.5">
       <p className="text-base font-bold text-slate-100">{value}</p>
       <p className="text-[10px] text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+function HealthStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: 'ok' | 'bad';
+}) {
+  return (
+    <div className="rounded-lg bg-slate-800/40 border border-slate-800/80 p-3">
+      <p className={`text-base font-bold tabular-nums ${tone === 'bad' ? 'text-amber-300' : 'text-slate-100'}`}>{value}</p>
+      <p className="text-[10px] text-slate-500 mt-0.5">{label}</p>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { HealthBadge } from '@/components/admin/StatusBadge';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getVisitors } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
-import { formatNumber, SOURCE_LABELS, DEVICE_LABELS } from '@/lib/utils/fa';
+import { formatNumber, formatDateKey, SOURCE_LABELS, DEVICE_LABELS } from '@/lib/utils/fa';
 
 export default async function AnalyticsVisitorsPage({
   searchParams,
@@ -18,7 +18,7 @@ export default async function AnalyticsVisitorsPage({
     <div>
       <PageHeader
         title="بازدیدکنندگان"
-        description={`نشست‌های اخیر · ${range.fromKey} تا ${range.toKey}`}
+        description={`نشست‌های اخیر · ${formatDateKey(range.fromKey)} تا ${formatDateKey(range.toKey)}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 

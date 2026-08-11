@@ -7,7 +7,7 @@ export interface BarEntry {
 export default function BarList({
   data,
   showPercent = true,
-  emptyTitle = 'No data yet',
+  emptyTitle = 'هنوز داده‌ای ثبت نشده',
 }: {
   data: BarEntry[];
   showPercent?: boolean;
@@ -27,12 +27,14 @@ export default function BarList({
               <span className="text-slate-300 truncate flex-1" title={d.key}>
                 {d.key}
               </span>
-              <span className="text-slate-500 font-medium tabular-nums ml-2">
-                {d.value.toLocaleString()}
+              <span className="text-slate-500 font-medium tabular-nums ms-2">
+                {new Intl.NumberFormat('fa-IR').format(d.value)}
               </span>
               {showPercent && (
-                <span className="text-slate-600 tabular-nums w-10 text-right">
-                  {max > 1 ? `${Math.round(pct)}%` : '100%'}
+                <span className="text-slate-600 tabular-nums w-10 text-left">
+                  {max > 1
+                    ? `${new Intl.NumberFormat('fa-IR').format(Math.round(pct))}٪`
+                    : '۱۰۰٪'}
                 </span>
               )}
             </div>

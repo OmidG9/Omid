@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
   if (!isAuthConfigured() || !getAdminPassword()) {
     return NextResponse.json(
-      { ok: false, error: 'Admin authentication is not configured. Set ADMIN_SECRET and ADMIN_PASSWORD.' },
+      { ok: false, error: 'احراز هویت مدیر پیکربندی نشده است. ADMIN_SECRET و ADMIN_PASSWORD را تنظیم کنید.' },
       { status: 500 }
     );
   }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   if (await isRateLimited(ip)) {
     await logSecurityEvent({ type: SECURITY_EVENT.RATE_LIMIT_TRIGGERED, ip, path: '/api/admin/login', reason: 'login rate limit' });
     return NextResponse.json(
-      { ok: false, error: 'Too many attempts. Try again later.' },
+      { ok: false, error: 'تعداد تلاش‌ها بیش از حد مجاز است. بعداً دوباره تلاش کنید.' },
       { status: 429 }
     );
   }
@@ -58,13 +58,13 @@ export async function POST(request: NextRequest) {
   }
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: 'Invalid request.' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'درخواست نامعتبر است.' }, { status: 400 });
   }
 
   const ok = await verifyAdminPassword(parsed.data.password);
   if (!ok) {
     await logSecurityEvent({ type: SECURITY_EVENT.AUTH_FAILURE, ip, path: '/api/admin/login', reason: 'wrong password' });
-    return NextResponse.json({ ok: false, error: 'Incorrect password.' }, { status: 401 });
+    return NextResponse.json({ ok: false, error: 'رمز عبور اشتباه است.' }, { status: 401 });
   }
 
   const token = await createSessionToken();

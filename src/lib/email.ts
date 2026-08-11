@@ -87,20 +87,20 @@ export function sanitizeHeader(value: string): string {
 
 function generatePlainText(data: ContactEmailData, tehranTime: string): string {
   return [
-    'New message from your portfolio',
+    'پیام جدید از فرم تماس پورتفولیو',
     '─'.repeat(40),
-    `Name:      ${data.name}`,
-    `Email:     ${data.email}`,
-    `Time:      ${tehranTime}`,
+    `نام:      ${data.name}`,
+    `ایمیل:     ${data.email}`,
+    `زمان:      ${tehranTime}`,
     '',
-    'Message:',
+    'متن پیام:',
     data.message,
     '',
     '─'.repeat(40),
     `IP: ${data.ip}`,
     `UA: ${data.userAgent}`,
     '',
-    'Sent from your portfolio contact form',
+    'ارسال‌شده از فرم تماس پورتفولیو',
   ].join('\n');
 }
 
@@ -117,11 +117,11 @@ function generateDarkEmailHtml(
   const safeIp = escapeHtml(data.ip);
 
   return /* html */ `<!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Portfolio Message</title>
+  <title>پیام جدید از فرم تماس پورتفولیو</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0b1220;font-family:'Segoe UI',Arial,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -143,7 +143,7 @@ function generateDarkEmailHtml(
                                -webkit-background-clip:text;
                                -webkit-text-fill-color:transparent;
                                color:#3b82f6;">
-                    Omid Portfolio
+                    پورتفولیوی امید
                   </span>
                 </div>
               </div>
@@ -165,11 +165,11 @@ function generateDarkEmailHtml(
                               border-bottom:1px solid #1e293b;">
                     <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;
                                text-transform:uppercase;color:#d7d9db;">
-                      New Message
+                      پیام جدید
                     </p>
                     <h1 style="margin:6px 0 0;font-size:20px;font-weight:700;color:#e5e7eb;
                                 line-height:1.3;">
-                      New message from your portfolio
+                      پیام جدیدی از فرم تماس پورتفولیو دریافت شد
                     </h1>
                   </td>
                 </tr>
@@ -189,7 +189,7 @@ function generateDarkEmailHtml(
                           <p style="margin:0 0 4px;font-size:11px;font-weight:700;
                                      letter-spacing:1.5px;text-transform:uppercase;
                                      color:#3b82f6;">
-                            Sender
+                            فرستنده
                           </p>
                           <p style="margin:0;font-size:16px;font-weight:600;color:#e5e7eb;">
                             ${safeName}
@@ -207,7 +207,7 @@ function generateDarkEmailHtml(
                           <p style="margin:0 0 4px;font-size:11px;font-weight:700;
                                      letter-spacing:1.5px;text-transform:uppercase;
                                      color:#3b82f6;">
-                            Email
+                            ایمیل
                           </p>
                           <p style="margin:0;font-size:15px;color:#93c5fd;">
                             ${safeEmail}
@@ -224,7 +224,7 @@ function generateDarkEmailHtml(
                     <p style="margin:0 0 12px;font-size:11px;font-weight:700;
                                letter-spacing:1.5px;text-transform:uppercase;
                                color:#3b82f6;">
-                      Message
+                      متن پیام
                     </p>
                     <div style="background:#0b1220;border:1px solid #1e293b;
                                 border-left:3px solid #3b82f6;
@@ -245,7 +245,7 @@ function generateDarkEmailHtml(
                         <td style="padding:0 0 8px;">
                           <span style="font-size:11px;color:#475569;letter-spacing:1px;
                                         text-transform:uppercase;font-weight:600;">
-                            &#128337;&nbsp; Received at
+                            &#128337;&nbsp; دریافت‌شده در
                           </span>
                           &nbsp;&nbsp;
                           <span style="font-size:13px;color:#94a3b8;">${safeTime}</span>
@@ -272,7 +272,7 @@ function generateDarkEmailHtml(
                              style="display:inline-block;padding:13px 32px;
                                     font-size:14px;font-weight:700;color:#ffffff;
                                     text-decoration:none;letter-spacing:0.5px;">
-                            &#9993;&nbsp; Reply to ${safeName}
+                            &#9993;&nbsp; پاسخ به ${safeName}
                           </a>
                         </td>
                       </tr>
@@ -289,10 +289,10 @@ function generateDarkEmailHtml(
           <tr>
             <td style="padding:24px 0 8px;text-align:center;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#475569;">
-                Omid Portfolio
+                پورتفولیوی امید
               </p>
               <p style="margin:0;font-size:12px;color:#334155;">
-                Sent from your portfolio contact form
+                ارسال‌شده از فرم تماس پورتفولیو
               </p>
             </td>
           </tr>
@@ -334,7 +334,7 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
   // throws a descriptive error before we waste time formatting dates.
   const transporter = createTransporter();
 
-  const fromName = process.env.CONTACT_FROM_NAME ?? 'Omid Portfolio';
+  const fromName = process.env.CONTACT_FROM_NAME ?? 'پورتفولیوی امید';
   const fromAddr = requireEnvVar('SMTP_USER');
   const toAddr = process.env.CONTACT_TO ?? fromAddr;
 
@@ -348,7 +348,7 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
         from: `"${fromName}" <${fromAddr}>`,
         to: toAddr,
         replyTo: `"${safeSenderName}" <${safeSenderEmail}>`,
-        subject: `New message from ${safeSenderName} — Portfolio`,
+        subject: `پیام جدید از ${safeSenderName} — پورتفولیو`,
         text: generatePlainText(data, tehranTime),
         html: generateDarkEmailHtml(data, tehranTime),
       }),

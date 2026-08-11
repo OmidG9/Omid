@@ -25,10 +25,10 @@ export default function AdminLoginPage() {
         router.replace('/admin');
         router.refresh();
       } else {
-        setError(json?.error ?? 'Login failed.');
+        setError(json?.error ?? 'ورود ناموفق بود.');
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError('خطای شبکه. لطفاً دوباره تلاش کنید.');
     } finally {
       setSubmitting(false);
     }
@@ -45,14 +45,14 @@ export default function AdminLoginPage() {
             <Lock size={20} className="text-blue-400" />
           </div>
           <h1 className="text-xl font-bold text-slate-100 text-center mb-1">
-            Admin Dashboard
+            داشبورد مدیریت
           </h1>
           <p className="text-sm text-slate-400 text-center mb-6">
-            ghanbariomid.ir command center
+            مرکز فرماندهی ghanbariomid.ir
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
             <label htmlFor="password" className=" block text-sm text-slate-300">
-              Password
+              رمز عبور
             </label>
             <input
               id="password"
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
               {submitting ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                'Sign in'
+                'ورود'
               )}
             </button>
           </form>

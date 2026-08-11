@@ -129,6 +129,31 @@ describe('spam classification (§47)', () => {
     });
     expect(score).toBeLessThan(60);
   });
+
+  it('flags an implausibly fast submission as too-fast without auto-blocking (§46)', () => {
+    const { score, flags } = scoreSpam({
+      name: 'Ali',
+      email: 'ali@example.com',
+      message: 'A clean-looking message typed in under a second, but bots can do this.',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120',
+      formTimeMs: 500,
+    });
+    expect(flags).toContain('too-fast');
+    expect(score).toBeGreaterThan(0);
+    // A single timing flag is not enough to classify as spam (no auto block).
+    expect(score).toBeLessThan(60);
+  });
+
+  it('does not penalise a realistic fill time (§46)', () => {
+    const { flags } = scoreSpam({
+      name: 'Ali',
+      email: 'ali@example.com',
+      message: 'A perfectly normal message about a project.',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120',
+      formTimeMs: 45_000,
+    });
+    expect(flags).not.toContain('too-fast');
+  });
 });
 
 describe('security event logging', () => {

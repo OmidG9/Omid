@@ -39,6 +39,18 @@ function uuid(): string {
   });
 }
 
+// Only public pages are tracked. The admin dashboard and internal routes must
+// never appear in analytics. The admin_session cookie is httpOnly so the
+// browser can't read it; that case is dropped server-side instead.
+function shouldTrackPath(): boolean {
+  if (typeof location === 'undefined') return false;
+  const p = location.pathname;
+  if (p.startsWith('/admin')) return false;
+  if (p.startsWith('/api/')) return false;
+  if (p.startsWith('/_next')) return false;
+  return p === '/' || p.startsWith('/projects');
+}
+
 let cachedVisitor: string | null = null;
 let cachedSession: string | null = null;
 let sessionTouchedAt = 0;
@@ -47,9 +59,14 @@ let initialized = false;
 function ensureSession(): string {
   const now = Date.now();
   if (cachedSession && now - sessionTouchedAt < SESSION_TTL_MS) return cachedSession;
-  cachedSession = getCookie(SESSION_COOKIE) ?? uuid();
+  const existing = getCookie(SESSION_COOKIE);
+  cachedSession = existing ?? uuid();
   sessionTouchedAt = now;
   setCookie(SESSION_COOKIE, cachedSession, 60 * 60 * 24 * 90);
+  // §10: record SESSION_START whenever a fresh session id is minted.
+  if (!existing) {
+    trackBase('SESSION_START', {}, {});
+  }
   return cachedSession;
 }
 
@@ -110,6 +127,7 @@ function send(body: Record<string, unknown>): void {
 }
 
 function trackBase(eventName: AnalyticsEventName, extra: Record<string, unknown>, context: Partial<ViewerContext>): void {
+  if (!shouldTrackPath()) return;
   const body = {
     visitorId: ensureVisitor(),
     sessionId: ensureSession(),
@@ -131,9 +149,17 @@ function utmParams(): Record<string, string | null> {
   if (typeof location === 'undefined') return {};
   const q = new URLSearchParams(location.search);
   const out: Record<string, string | null> = {};
-  for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']) {
-    const v = q.get(k);
-    out[k.replace('utm_', 'utm')] = v;
+  // Normalize to the camelCase keys the server reads (`utmSource`, …).
+  const map: Array<[string, string]> = [
+    ['utm_source', 'utmSource'],
+    ['utm_medium', 'utmMedium'],
+    ['utm_campaign', 'utmCampaign'],
+    ['utm_term', 'utmTerm'],
+    ['utm_content', 'utmContent'],
+  ];
+  for (const [query, key] of map) {
+    const v = q.get(query);
+    if (v) out[key] = v;
   }
   return out;
 }
@@ -171,6 +197,11 @@ export const analytics = {
 
   formStart(opts?: { formTimeMs?: number }): void {
     trackBase('CONTACT_FORM_START', {}, { formTimeMs: opts?.formTimeMs ?? null });
+  },
+
+  /** §10: fired the moment a visitor submits, separate from SUCCESS/ERROR. */
+  formSubmit(opts?: { formTimeMs?: number }): void {
+    trackBase('CONTACT_FORM_SUBMIT', {}, { formTimeMs: opts?.formTimeMs ?? null });
   },
 
   formSuccess(opts?: { formTimeMs?: number }): void {

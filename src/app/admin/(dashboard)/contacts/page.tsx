@@ -1,11 +1,14 @@
 import Link from 'next/link';
+import { Download } from 'lucide-react';
 import { PageHeader, Card } from '@/components/admin/Card';
 import { EmptyState } from '@/components/admin/StateViews';
 import { StatusBadge } from '@/components/admin/StatusBadge';
+import ContactSearch from '@/components/admin/ContactSearch';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getStore } from '@/lib/db';
 import { parseRange } from '@/lib/services/rangeParam';
 import { CONTACT_STATUS } from '@/types/contacts';
+import { formatNumber, formatDateKey, CONTACT_STATUS_LABELS } from '@/lib/utils/fa';
 
 export default async function ContactsPage({
   searchParams,
@@ -35,16 +38,37 @@ export default async function ContactsPage({
 
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 
+  const filterParams = {
+    range: searchParams.range ?? '',
+    from: searchParams.from ?? '',
+    to: searchParams.to ?? '',
+    status: searchParams.status && searchParams.status !== 'ALL' ? searchParams.status : '',
+    q: q,
+  };
+
   return (
     <div>
       <PageHeader
-        title="Contacts"
-        description={`${result.total} request${result.total === 1 ? '' : 's'} · ${range.fromKey} → ${range.toKey}`}
-        actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
+        title="تماس‌ها"
+        description={`${formatNumber(result.total)} درخواست · ${formatDateKey(range.fromKey)} تا ${formatDateKey(range.toKey)}`}
+        actions={
+          <div className="flex items-center gap-2">
+            <ContactSearch initial={q} filterParams={filterParams} />
+            <Link
+              href={`/api/admin/contacts/export?${new URLSearchParams(filterParams)}`}
+              download
+              className="btn-secondary flex items-center gap-1.5 text-sm whitespace-nowrap"
+            >
+              <Download size={14} />
+              Export CSV
+            </Link>
+          </div>
+        }
       />
 
       {/* Status filter */}
-      <div className="flex items-center gap-1.5 flex-wrap mb-4">
+      <div className="flex flex-wrap items-center gap-1.5 justify-between mb-4">
+        <div className="flex items-center gap-1.5 flex-wrap">
         {['ALL', ...Object.values(CONTACT_STATUS)].map((s) => (
           <Link
             key={s}
@@ -55,43 +79,45 @@ export default async function ContactsPage({
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border-transparent'
             }`}
           >
-            {s}
+            {s === 'ALL' ? 'همه' : CONTACT_STATUS_LABELS[s] ?? s}
           </Link>
         ))}
+        </div>
+        <DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />
       </div>
 
       {result.items.length === 0 ? (
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/50">
           <EmptyState
-            title="No requests yet"
-            description="Contact form submissions will appear here."
+            title="هنوز درخواستی ثبت نشده"
+            description="ارسال‌های فرم تماس در اینجا نمایش داده می‌شوند."
           />
         </div>
       ) : (
-        <Card title={`Page ${result.page} of ${totalPages}`}>
+        <Card title={`صفحهٔ ${formatNumber(result.page)} از ${formatNumber(totalPages)}`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
-                  <th className="pb-2 pr-2 font-medium">From</th>
-                  <th className="pb-2 pr-2 font-medium">Email</th>
-                  <th className="pb-2 pr-2 font-medium">Status</th>
-                  <th className="pb-2 pr-2 font-medium">Source</th>
-                  <th className="pb-2 pr-2 font-medium">Received</th>
+                <tr className="text-right text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+                  <th className="pb-2 pe-2 font-medium">فرستنده</th>
+                  <th className="pb-2 pe-2 font-medium">ایمیل</th>
+                  <th className="pb-2 pe-2 font-medium">وضعیت</th>
+                  <th className="pb-2 pe-2 font-medium">منبع</th>
+                  <th className="pb-2 pe-2 font-medium">دریافت‌شده</th>
                   <th className="pb-2 font-medium" />
                 </tr>
               </thead>
               <tbody>
                 {result.items.map((c) => (
                   <tr key={c.id} className="border-b border-slate-800/50 text-xs text-slate-400">
-                    <td className="py-2.5 pr-2 text-slate-200 font-medium">{c.name}</td>
-                    <td className="py-2.5 pr-2 text-slate-400" dir="ltr">{c.email}</td>
-                    <td className="py-2.5 pr-2"><StatusBadge status={c.status} /></td>
-                    <td className="py-2.5 pr-2 capitalize">{c.source}</td>
-                    <td className="py-2.5 pr-2 tabular-nums">{new Date(c.createdAt).toLocaleString('fa-IR')}</td>
-                    <td className="py-2.5 text-right">
+                    <td className="py-2.5 pe-2 text-slate-200 font-medium">{c.name}</td>
+                    <td className="py-2.5 pe-2 text-slate-400" dir="ltr">{c.email}</td>
+                    <td className="py-2.5 pe-2"><StatusBadge status={c.status} /></td>
+                    <td className="py-2.5 pe-2">{c.source}</td>
+                    <td className="py-2.5 pe-2 tabular-nums">{new Date(c.createdAt).toLocaleString('fa-IR')}</td>
+                    <td className="py-2.5 text-left">
                       <Link href={`/admin/contacts/${c.id}`} className="text-blue-400 hover:text-blue-300 text-xs underline underline-offset-2">
-                        View
+                        مشاهده
                       </Link>
                     </td>
                   </tr>
@@ -114,7 +140,7 @@ export default async function ContactsPage({
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border-transparent'
               }`}
             >
-              {p}
+              {formatNumber(p)}
             </Link>
           ))}
         </div>

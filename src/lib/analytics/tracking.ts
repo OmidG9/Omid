@@ -17,6 +17,18 @@ import { getStore } from '@/lib/db';
 
 const MAX_WIDTH = 10_000; // arbitrary, just bounds junk input
 
+// Public pages we want in analytics: the landing page and project pages.
+// Everything else (dashboard, login, any future admin surface) is excluded so
+// staff traffic never pollutes visitor/conversion numbers.
+const EXCLUDED_PATH_PREFIXES: ReadonlyArray<string> = ['/admin', '/api', '/_next'];
+
+/** True when a path is a public landing/project route that should be recorded. */
+export function isTrackedPath(path: string | null | undefined): boolean {
+  const p = path ?? '/';
+  if (EXCLUDED_PATH_PREFIXES.some((prefix) => p.startsWith(prefix))) return false;
+  return p === '/' || p.startsWith('/projects');
+}
+
 export interface TrackRequestPayload {
   visitorId?: string;
   sessionId?: string;

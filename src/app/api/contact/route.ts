@@ -15,7 +15,35 @@ import { sendContactEmail } from '@/lib/email';
 import { isRateLimited } from '@/lib/rateLimiter';
 import { persistContact, appendTimeline } from '@/lib/services/contactService';
 import { logSecurityEvent } from '@/lib/services/securityService';
+import { trackEvent } from '@/lib/analytics/tracking';
+import { getSettings } from '@/lib/settings';
 import { SECURITY_EVENT } from '@/types/security';
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+function clientId(body: unknown, key: 'visitorId' | 'sessionId'): string | undefined {
+  const b = body as Record<string, unknown> | null;
+  return typeof b?.[key] === 'string' && (b[key] as string).length ? (b[key] as string).slice(0, 64) : undefined;
+}
+
+/** Record a CONTACT_FORM_ERROR analytics event (server-side, §41/§5.3). */
+async function trackFormError(errorType: string, body: unknown): Promise<void> {
+  try {
+    const visitorId = clientId(body, 'visitorId');
+    const sessionId = clientId(body, 'sessionId');
+    await trackEvent({
+      payload: {
+        eventName: 'CONTACT_FORM_ERROR',
+        errorType,
+        visitorId,
+        sessionId,
+        context: {},
+      },
+    });
+  } catch {
+    // Errors are best-effort; the form submission itself already returned.
+  }
+}
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 
@@ -30,6 +58,13 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') ?? 'unknown';
   const referrer = request.headers.get('referer');
 
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    body = null;
+  }
+
   // Rate limit (Redis when env vars present, in-memory fallback otherwise)
   if (await isRateLimited(ip)) {
     await logSecurityEvent({
@@ -38,17 +73,11 @@ export async function POST(request: NextRequest) {
       path: '/api/contact',
       reason: 'contact rate limit',
     });
+    await trackFormError('RATE_LIMITED', body);
     return NextResponse.json(
-      { ok: false, error: 'Too many requests. Please try again later.' },
+      { ok: false, error: 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً بعداً دوباره تلاش کنید.', errorType: 'RATE_LIMITED' },
       { status: 429 }
     );
-  }
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    body = null;
   }
 
   // Honeypot check happens BEFORE Zod validation so a filled hidden field is
@@ -77,7 +106,11 @@ export async function POST(request: NextRequest) {
       path: '/api/contact',
       reason: 'validation failed',
     });
-    return NextResponse.json({ ok: false, error: 'Invalid input.' }, { status: 400 });
+    await trackFormError('VALIDATION_ERROR', body);
+    return NextResponse.json(
+      { ok: false, error: 'ورودی نامعتبر است.', errorType: 'VALIDATION_ERROR' },
+      { status: 400 }
+    );
   }
 
   const { name, email, message } = result.data;
@@ -99,8 +132,9 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    // Persist + classify first; persistence outlives SMTP failure.
-    const { contact, isDuplicate } = await persistContact({
+    // Thresholds come from persisted settings (§24, §47).
+    const settings = await getSettings();
+    const { contact, isDuplicate, duplicateOf } = await persistContact({
       name,
       email,
       subject: 'Website contact form',
@@ -112,9 +146,27 @@ export async function POST(request: NextRequest) {
       visitorId,
       sessionId,
       timeline,
+      spamThreshold: settings.spamScoreThreshold,
+      duplicateWindowMs: settings.duplicateWindowHours * 60 * 60 * 1000,
     });
 
-    if (contact.spamScore >= 60 || isDuplicate) {
+    if (isDuplicate) {
+      await logSecurityEvent({
+        type: SECURITY_EVENT.BLOCKED_REQUEST,
+        ip,
+        path: '/api/contact',
+        reason: 'duplicate submission',
+        meta: { score: contact.spamScore },
+      });
+    } else if (contact.spamScore > 0 && contact.spamScore < settings.spamScoreThreshold) {
+      await logSecurityEvent({
+        type: SECURITY_EVENT.SUSPICIOUS_REQUEST,
+        ip,
+        path: '/api/contact',
+        reason: `spamScore=${contact.spamScore} below threshold`,
+        meta: { score: contact.spamScore },
+      });
+    } else if (contact.spamScore >= settings.spamScoreThreshold || isDuplicate) {
       await logSecurityEvent({
         type: SECURITY_EVENT.SPAM_DETECTED,
         ip,
@@ -143,8 +195,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Contact API error:', error);
+    await trackFormError('SERVER_ERROR', body);
     return NextResponse.json(
-      { ok: false, error: 'Failed to send message. Please try again later.' },
+      { ok: false, error: 'ارسال پیام ناموفق بود. لطفاً بعداً دوباره تلاش کنید.', errorType: 'SERVER_ERROR' },
       { status: 500 }
     );
   }

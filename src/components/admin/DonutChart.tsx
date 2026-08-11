@@ -46,7 +46,7 @@ export default function DonutChart({
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         role="img"
-        aria-label="Distribution chart"
+        aria-label="نمودار توزیع"
         style={{ transform: 'rotate(-90deg)' }}
       >
         <defs>
@@ -92,7 +92,9 @@ export default function DonutChart({
               <span className="w-2 h-2 rounded-sm" style={{ background: d.color }} />
               <span className="text-slate-300 flex-1 truncate">{d.key}</span>
               <span className="text-slate-500">
-                {total > 0 ? `${Math.round((d.value / total) * 100)}%` : '0%'}
+                {total > 0
+                  ? `${new Intl.NumberFormat('fa-IR').format(Math.round((d.value / total) * 100))}٪`
+                  : '۰٪'}
               </span>
             </li>
           ))}

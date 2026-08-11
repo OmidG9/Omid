@@ -4,7 +4,7 @@
  * misleading percentages.
  */
 
-// import { formatNumber } from '@/lib/utils/fa';
+import { formatNumber } from '@/lib/utils/fa';
 
 export interface PercentageChange {
   change: number | null; // percentage points, null when not meaningful
@@ -63,4 +63,40 @@ export function topEntries(
     .map(([key, value]) => ({ key, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
+}
+
+/**
+ * Aggregate a daily traffic series into ISO-week buckets (§20). Returns one
+ * point per week present in the input, ordered oldest → newest. Groups by the
+ * week of each day so a 30/90-day view reads cleanly.
+ */
+export function aggregateWeekly<
+  T extends { date: string; visitors: number; sessions: number; pageViews: number }
+>(series: T[]): T[] {
+  if (series.length === 0) return [];
+  const buckets = new Map<string, T>();
+  for (const point of series) {
+    const [y, m, d] = point.date.split('-').map(Number);
+    const key = isoWeekKey(y, m, d);
+    const prev = buckets.get(key);
+    if (!prev) {
+      buckets.set(key, { ...point, date: key });
+      continue;
+    }
+    prev.visitors += point.visitors;
+    prev.sessions += point.sessions;
+    prev.pageViews += point.pageViews;
+  }
+  return [...buckets.values()].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+}
+
+function isoWeekKey(year: number, month: number, day: number): string {
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstDay = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const weekNumber = Math.round(
+    ((date.getTime() - firstDay.getTime()) / 86400000 - 3 + ((firstDay.getUTCDay() + 6) % 7)) / 7 + 1
+  );
+  return `${date.getUTCFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
 }

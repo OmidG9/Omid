@@ -31,7 +31,7 @@ export default function DateRangePicker({
 
   return (
     <div className="flex items-center gap-1 flex-wrap">
-      <CalendarRange size={15} className="text-slate-500 mr-1" />
+      <CalendarRange size={15} className="text-slate-500 ms-1" />
       {DATE_RANGE_PRESETS.map((p) => {
         const active = mode === p.id;
         return (
@@ -49,21 +49,21 @@ export default function DateRangePicker({
         );
       })}
       {mode === 'custom' && (
-        <div className="flex items-center gap-1.5 ml-2">
+        <div className="flex items-center gap-1.5 ms-2">
           <input
             type="date"
             value={from ?? ''}
             onChange={(e) => apply({ mode: 'custom', from: e.target.value, to })}
             className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300"
-            aria-label="From date"
+            aria-label="تاریخ شروع"
           />
-          <span className="text-slate-600 text-xs">to</span>
+          <span className="text-slate-600 text-xs">تا</span>
           <input
             type="date"
             value={to ?? ''}
             onChange={(e) => apply({ mode: 'custom', from, to: e.target.value })}
             className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300"
-            aria-label="To date"
+            aria-label="تاریخ پایان"
           />
         </div>
       )}

@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     page += 1;
   }
 
-  const header = ['Status', 'Name', 'Email', 'Subject', 'Source', 'Created', 'Project'];
+  const header = ['وضعیت', 'نام', 'ایمیل', 'موضوع', 'منبع', 'تاریخ ثبت', 'پروژه'];
   const lines = [header.join(',')];
   for (const c of rows) {
     lines.push(

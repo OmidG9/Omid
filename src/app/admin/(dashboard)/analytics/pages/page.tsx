@@ -18,17 +18,17 @@ export default async function AnalyticsPagesPage({
   return (
     <div>
       <PageHeader
-        title="Pages"
-        description={`Top pages by views · ${range.fromKey} → ${range.toKey}`}
+        title="صفحات"
+        description={`پربازدیدترین صفحات · ${formatDateKey(range.fromKey)} تا ${formatDateKey(range.toKey)}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 
       {data.items.length === 0 ? (
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/50">
-          <EmptyState title="No page views yet" />
+          <EmptyState title="هنوز بازدیدی از صفحات ثبت نشده" />
         </div>
       ) : (
-        <Card title={`Total ${data.totals.toLocaleString()} page views`}>
+        <Card title={`مجموع ${formatNumber(data.totals)} بازدید از صفحات`}>
           <BarList data={data.items} />
         </Card>
       )}

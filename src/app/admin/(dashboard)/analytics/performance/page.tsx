@@ -5,6 +5,7 @@ import BarList from '@/components/admin/BarList';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getPerformance, getHealth } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
+import { formatNumber, formatDateKey } from '@/lib/utils/fa';
 
 export default async function AnalyticsPerformancePage({
   searchParams,
@@ -28,46 +29,46 @@ export default async function AnalyticsPerformancePage({
   return (
     <div>
       <PageHeader
-        title="Performance"
-        description={`Form funnel & health · ${range.fromKey} → ${range.toKey}`}
+        title="عملکرد فرم"
+        description={`قیف فرم تماس و سلامت · ${formatDateKey(range.fromKey)} تا ${formatDateKey(range.toKey)}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 
       {empty ? (
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/50">
-          <EmptyState title="No form activity yet" description="Form funnel metrics appear once visitors interact with the contact form." />
+          <EmptyState title="هنوز فعالیتی در فرم ثبت نشده" description="شاخص‌های قیف فرم پس از تعامل بازدیدکنندگان با فرم تماس نمایش داده می‌شوند." />
         </div>
       ) : (
         <div className="space-y-4">
           <Card
-            title="Form Funnel"
-            subtitle="CONTACT_FORM_VIEW → START → SUCCESS"
+            title="قیف فرم"
+            subtitle="مشاهده فرم تماس ← شروع ← ارسال موفق"
             action={<HealthBadge status={healthState} />}
           >
-            <FunnelBar label="Form views" value={performance.formViews} max={performance.formViews} />
-            <FunnelBar label="Form starts" value={performance.formStarts} max={performance.formViews} />
-            <FunnelBar label="Successful submissions" value={performance.formSuccess} max={performance.formViews} />
-            <FunnelBar label="Errors" value={performance.formErrors} max={performance.formViews} />
+            <FunnelBar label="مشاهده‌های فرم" value={performance.formViews} max={performance.formViews} />
+            <FunnelBar label="شروع‌های فرم" value={performance.formStarts} max={performance.formViews} />
+            <FunnelBar label="ارسال‌های موفق" value={performance.formSuccess} max={performance.formViews} />
+            <FunnelBar label="خطاها" value={performance.formErrors} max={performance.formViews} />
           </Card>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Metric label="Conversion rate" value={`${performance.conversionRate.toFixed(1)}%`} sub={`of ${performance.formViews} views`} />
-            <Metric label="Start rate" value={`${performance.startRate.toFixed(1)}%`} sub="starts / views" />
-            <Metric label="Submission rate" value={`${performance.submissionRate.toFixed(1)}%`} sub="success / starts" />
-            <Metric label="Abandonment" value={`${performance.abandonmentRate.toFixed(1)}%`} sub="(starts − success) / starts" />
+            <Metric label="نرخ تبدیل" value={`${performance.conversionRate.toFixed(1)}٪`} sub={`از ${formatNumber(performance.formViews)} مشاهده`} />
+            <Metric label="نرخ شروع" value={`${performance.startRate.toFixed(1)}٪`} sub="شروع / مشاهده" />
+            <Metric label="نرخ ارسال" value={`${performance.submissionRate.toFixed(1)}٪`} sub="موفق / شروع" />
+            <Metric label="رهاسازی" value={`${performance.abandonmentRate.toFixed(1)}٪`} sub="(شروع − موفق) / شروع" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card title="Submission Health" subtitle="Spam vs valid submissions">
+            <Card title="سلامت ارسال‌ها" subtitle="هرزنامه در برابر ارسال‌های معتبر">
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <StatRow label="Contacts" value={health.contacts} />
-                <StatRow label="Spam" value={health.spam} />
-                <StatRow label="Spam rate" value={`${health.spamRate.toFixed(1)}%`} />
-                <StatRow label="Outbound clicks" value={health.outboundClicks} />
+                <StatRow label="تماس‌ها" value={formatNumber(health.contacts)} />
+                <StatRow label="هرزنامه" value={formatNumber(health.spam)} />
+                <StatRow label="نرخ هرزنامه" value={`${health.spamRate.toFixed(1)}٪`} />
+                <StatRow label="کلیک‌های خروجی" value={formatNumber(health.outboundClicks)} />
               </div>
             </Card>
-            <Card title="Error Types">
-              <BarList data={performance.errorTypes} emptyTitle="No form errors" />
+            <Card title="انواع خطا">
+              <BarList data={performance.errorTypes} emptyTitle="خطایی ثبت نشده" />
             </Card>
           </div>
         </div>
@@ -82,7 +83,7 @@ function FunnelBar({ label, value, max }: { label: string; value: number; max: n
     <div className="mb-3 last:mb-0">
       <div className="flex items-center justify-between text-xs mb-1">
         <span className="text-slate-400">{label}</span>
-        <span className="text-slate-200 font-medium tabular-nums">{value.toLocaleString()}</span>
+        <span className="text-slate-200 font-medium tabular-nums">{formatNumber(value)}</span>
       </div>
       <div className="h-2 rounded-full bg-slate-800/70 overflow-hidden">
         <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" style={{ width: `${Math.max(pct, value > 0 ? 2 : 0)}%` }} />
@@ -104,7 +105,7 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
 function StatRow({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg bg-slate-800/40 border border-slate-800/80 p-3">
-      <p className="text-lg font-bold text-slate-100">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+      <p className="text-lg font-bold text-slate-100">{typeof value === 'number' ? formatNumber(value) : value}</p>
       <p className="text-[10px] text-slate-500">{label}</p>
     </div>
   );

@@ -77,7 +77,7 @@ export default function AnalyticsChart({
     <div>
       <svg
         role="img"
-        aria-label="Traffic chart"
+        aria-label="نمودار ترافیک"
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="none"
         style={{ width: '100%', maxHeight: height }}

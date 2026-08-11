@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/admin/StateViews';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
+import { formatNumber, formatDateKey } from '@/lib/utils/fa';
 
 export default async function AnalyticsDevicesPage({
   searchParams,
@@ -20,8 +21,8 @@ export default async function AnalyticsDevicesPage({
   return (
     <div>
       <PageHeader
-        title="Devices"
-        description={`Device & platform breakdown · ${range.fromKey} → ${range.toKey}`}
+        title="دستگاه‌ها"
+        description={`تفکیک دستگاه و پلتفرم · ${formatDateKey(range.fromKey)} تا ${formatDateKey(range.toKey)}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 
@@ -31,21 +32,21 @@ export default async function AnalyticsDevicesPage({
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card title="Device Type">
+          <Card title="نوع دستگاه">
             <DonutChart
               data={data.items.map((d) => ({
                 key: d.key,
                 value: d.value,
                 color: { desktop: '#3b82f6', mobile: '#22d3ee', tablet: '#a78bfa' }[d.key] ?? '#64748b',
               }))}
-              centerValue={data.items.reduce((a, d) => a + d.value, 0).toLocaleString()}
-              centerLabel="visitors"
+              centerValue={formatNumber(data.items.reduce((a, d) => a + d.value, 0))}
+              centerLabel="بازدیدکننده"
             />
           </Card>
-          <Card title="Browsers">
+          <Card title="مرورگرها">
             <BarList data={data.browsers} />
           </Card>
-          <Card title="Operating Systems">
+          <Card title="سیستم‌عامل‌ها">
             <BarList data={data.os} />
           </Card>
         </div>

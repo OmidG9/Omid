@@ -31,6 +31,7 @@ export const K = {
   dmRet: (date: string) => `ano:dm:${date}:ret`,
   dmSessions: (date: string) => `ano:dm:${date}:s`,
   dmIndex: () => 'ano:dmidx',
+  lastEvent: () => 'ano:last:event',
   contact: (id: string) => `ct:${id}`,
   contactSorted: () => 'ct:sorted',
   contactStatus: (status: string) => `ct:st:${status}`,

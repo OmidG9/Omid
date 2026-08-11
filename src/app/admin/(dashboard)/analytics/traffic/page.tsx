@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/admin/StateViews';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
-import { formatNumber, SOURCE_LABELS } from '@/lib/utils/fa';
+import { formatNumber, formatDateKey, SOURCE_LABELS } from '@/lib/utils/fa';
 
 const SOURCE_COLORS: Record<string, string> = {
   direct: '#3b82f6',
@@ -29,7 +29,7 @@ export default async function AnalyticsTrafficPage({
     <div>
       <PageHeader
         title="ترافیک"
-        description={`کانال‌های منبع · ${range.fromKey} تا ${range.toKey}`}
+        description={`کانال‌های منبع · ${formatDateKey(range.fromKey)} تا ${formatDateKey(range.toKey)}`}
         actions={<DateRangePicker mode={(searchParams.range as RangeMode) ?? '30'} from={searchParams.from} to={searchParams.to} />}
       />
 

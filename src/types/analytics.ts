@@ -120,6 +120,7 @@ export interface DailyMetric {
   outboundClicks: number;
   formViews: number;
   formStarts: number;
+  formSubmits: number;
   formSuccess: number;
   formErrors: number;
   projects: Record<string, number>;

@@ -54,8 +54,12 @@ export interface TrackInput {
 export interface DataStore {
   trackEvent(input: TrackInput): Promise<void>;
   recordContact(contact: ContactRequest): Promise<void>;
-  /** Atomically claim a duplicate hash; returns false if already claimed. */
-  claimDuplicate(hash: string, contactId: string): Promise<boolean>;
+  /**
+   * Atomically claim a duplicate hash; stores the submitting contact id and
+   * returns the id of the *prior* submission when a duplicate exists, or null
+   * when this claim won (§50).
+   */
+  claimDuplicate(hash: string, contactId: string, ttlSec?: number): Promise<string | null>;
   recordSecurityEvent(ev: SecurityEvent): Promise<void>;
   /** Increment a scalar daily counter (contacts, spam) for a date key. */
   bumpDailyCounter(date: string, field: 'contacts' | 'spam', by?: number): Promise<void>;
@@ -65,6 +69,8 @@ export interface DataStore {
   getDailyMetrics(keys: string[]): Promise<Array<DailyMetric | undefined>>;
   getActiveMetricDates(fromKey: string, toKey: string): Promise<string[]>;
   listSessions(from: number, to: number, limit: number): Promise<SessionRecord[]>;
+  /** Timestamp of the most recently received analytics event (or 0). */
+  getLastEventAt(): Promise<number>;
 
   getContact(id: string): Promise<ContactRequest | null>;
   listContacts(opts: ListContactsOptions): Promise<Paginated<ContactRequest>>;
@@ -115,6 +121,9 @@ export function accumulateMetric(
     case 'CONTACT_FORM_START':
       dailyCounterDelta(day, 'formStarts');
       break;
+    case 'CONTACT_FORM_SUBMIT':
+      dailyCounterDelta(day, 'formSubmits');
+      break;
     case 'CONTACT_FORM_SUCCESS':
       dailyCounterDelta(day, 'formSuccess');
       break;
@@ -142,6 +151,8 @@ interface MemoryShape {
   dayNew: Map<string, Set<string>>;
   dayRet: Map<string, Set<string>>;
   contacts: Map<string, ContactRequest>;
+  /** Most recent analytics event timestamp (for health checks). */
+  lastEventAt: number;
   contactSorted: Map<number, Set<string>>; // createdAt -> ids
   contactStatus: Map<ContactStatus, Set<string>>;
   duplicateHashes: Map<string, string>;
@@ -162,6 +173,7 @@ export class MemoryStore implements DataStore {
     dayNew: new Map(),
     dayRet: new Map(),
     contacts: new Map(),
+    lastEventAt: 0,
     contactSorted: new Map(),
     contactStatus: new Map(),
     duplicateHashes: new Map(),
@@ -178,6 +190,7 @@ export class MemoryStore implements DataStore {
     const { event } = input;
     if (this.shape.events.has(event.eventId)) return; // dedupe
     this.shape.events.set(event.eventId, event);
+    this.shape.lastEventAt = Math.max(this.shape.lastEventAt, event.timestamp);
 
     const dayKey = dateKey(event.timestamp);
     let day = this.shape.daily.get(dayKey);
@@ -272,10 +285,11 @@ export class MemoryStore implements DataStore {
     this.shape.contactSorted.set(contact.createdAt, ts);
   }
 
-  async claimDuplicate(hash: string, contactId: string): Promise<boolean> {
-    if (this.shape.duplicateHashes.has(hash)) return false;
+  async claimDuplicate(hash: string, contactId: string, _ttlSec?: number): Promise<string | null> {
+    const existing = this.shape.duplicateHashes.get(hash);
+    if (existing) return existing;
     this.shape.duplicateHashes.set(hash, contactId);
-    return true;
+    return null;
   }
 
   async recordSecurityEvent(ev: SecurityEvent): Promise<void> {
@@ -322,6 +336,10 @@ export class MemoryStore implements DataStore {
       .sort((a, b) => b.lastActivityAt - a.lastActivityAt)
       .slice(0, limit);
     return all;
+  }
+
+  async getLastEventAt(): Promise<number> {
+    return this.shape.lastEventAt;
   }
 
   async getContact(id: string): Promise<ContactRequest | null> {

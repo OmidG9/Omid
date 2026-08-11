@@ -102,7 +102,7 @@ const portfolio: PortfolioData = {
   email:
     process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'omid.ghanbari.1399@gmail.com',
   telegram: 'https://t.me/hope3179',
-  availability: 'Open to opportunities',
+  availability: 'آماده عرضه توانمندی‌ها',
   summary:
     'توسعه‌دهنده فول‌استک با رویکرد محصول‌محور و تجربهٔ عملی در طراحی و پیاده‌سازی اپلیکیشن‌های سازمانی، داشبوردهای Real-Time و سرویس‌های مقیاس‌پذیر. به کیفیت کد، کار تیمی منسجم و تحویل به‌موقع اهمیت می‌دهم و از ابزارهای هوش مصنوعی برای تسریع و ارتقای فرآیند توسعه بهره می‌برم.',
   heroValue:
@@ -112,13 +112,13 @@ const portfolio: PortfolioData = {
     {
       platform: 'GitHub',
       url: 'https://github.com/OmidG9',
-      label: 'GitHub Profile',
+      label: 'پروفایل گیت‌هاب',
     },
     // LinkedIn omitted until a real profile URL is available
     {
       platform: 'Telegram',
       url: 'https://t.me/hope3179',
-      label: 'Telegram Contact',
+      label: 'تماس تلگرام',
     },
   ],
 
@@ -148,7 +148,7 @@ const portfolio: PortfolioData = {
 
   skillCategories: [
     {
-      name: 'Backend',
+      name: 'بک‌اند (Backend)',
       icon: 'server',
       skills: [
         { name: 'Node.js' },
@@ -160,7 +160,7 @@ const portfolio: PortfolioData = {
       ],
     },
     {
-      name: 'Frontend',
+      name: 'فرانت‌اند (Frontend)',
       icon: 'monitor',
       skills: [
         { name: 'React' },
@@ -171,7 +171,7 @@ const portfolio: PortfolioData = {
       ],
     },
     {
-      name: 'Real-time & Maps',
+      name: 'نقشه و بلادرنگ (Real-Time)',
       icon: 'map',
       skills: [
         { name: 'WebSocket' },
@@ -181,7 +181,7 @@ const portfolio: PortfolioData = {
       ],
     },
     {
-      name: 'DevOps',
+      name: 'دووآپس (DevOps)',
       icon: 'terminal',
       skills: [
         { name: 'Linux' },
@@ -191,7 +191,7 @@ const portfolio: PortfolioData = {
       ],
     },
     {
-      name: 'Tools & Design',
+      name: 'ابزارها و طراحی',
       icon: 'tool',
       skills: [
         { name: 'Git / GitHub' },
@@ -205,9 +205,9 @@ const portfolio: PortfolioData = {
   experiences: [
     {
       company: 'تجارت الکترونیک آرون پایدار',
-      role: 'Full-Stack Developer',
+      role: 'توسعه‌دهنده فول‌استک',
       period: '۱۳۹۸ – ۱۴۰۴',
-      type: 'Full-time',
+      type: 'تمام‌وقت',
       current: true,
       bullets: [
         'مشارکت در طراحی، توسعه و نگهداری بیش از ۴ پروژهٔ سازمانی از جمله آموزینو و سمفا',
@@ -219,9 +219,9 @@ const portfolio: PortfolioData = {
     },
     {
       company: 'هواپیمایی آتا – TraTicket',
-      role: 'UI/UX Designer',
+      role: 'طراح UI/UX',
       period: '۱۴۰۱',
-      type: 'Contract',
+      type: 'پروژه‌ای',
       current: false,
       bullets: [
         'طراحی رابط کاربری سیستم خرید بلیط هواپیما در هماهنگی با تیم ~۲۵ نفره',
@@ -231,9 +231,9 @@ const portfolio: PortfolioData = {
     },
     {
       company: 'IQDuel',
-      role: 'Front-End Developer',
+      role: 'توسعه‌دهنده فرانت‌اند',
       period: '۱۴۰۲',
-      type: 'Contract',
+      type: 'پروژه‌ای',
       current: false,
       bullets: [
         'توسعهٔ داشبورد مدیریتی با Next.js و TypeScript برای پلتفرمی با بیش از ۵۰۰۰ کاربر فعال',

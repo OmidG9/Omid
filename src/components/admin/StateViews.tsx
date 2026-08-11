@@ -1,6 +1,6 @@
 import { Loader2, Inbox, TriangleAlert } from 'lucide-react';
 
-export function LoadingState({ label = 'Loading…' }: { label?: string }) {
+export function LoadingState({ label = 'در حال بارگذاری…' }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-14 text-slate-500 gap-3">
       <Loader2 size={22} className="animate-spin text-blue-400" />
@@ -10,8 +10,8 @@ export function LoadingState({ label = 'Loading…' }: { label?: string }) {
 }
 
 export function EmptyState({
-  title = 'No data yet',
-  description = 'Data will appear here once visitors start using the site.',
+  title = 'هنوز داده‌ای ثبت نشده',
+  description = 'به‌محض شروع بازدید بازدیدکنندگان از سایت، داده‌ها اینجا نمایش داده می‌شوند.',
 }: {
   title?: string;
   description?: string;
@@ -30,7 +30,7 @@ export function EmptyState({
 }
 
 export function ErrorState({
-  message = 'Something went wrong loading this section.',
+  message = 'در بارگذاری این بخش خطایی رخ داد.',
   onRetry,
 }: {
   message?: string;
@@ -42,7 +42,7 @@ export function ErrorState({
       <p className="text-sm text-slate-300 max-w-sm">{message}</p>
       {onRetry && (
         <button onClick={onRetry} className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2">
-          Retry
+          تلاش مجدد
         </button>
       )}
     </div>

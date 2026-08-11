@@ -7,7 +7,7 @@ import Container from '@/components/ui/Container';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ProjectCard from '@/components/projects/ProjectCard';
 import portfolio from '@/data/portfolio';
-import { getCategoryStyle } from '@/lib/categoryColors';
+import { getCategoryStyle, CATEGORY_LABELS } from '@/lib/categoryColors';
 
 const allCategories = ['همه', 'Full-Stack', 'Frontend', 'UI/UX', 'WordPress'];
 
@@ -41,7 +41,7 @@ export default function Projects() {
                   active === cat ? style.active : style.inactive
                 }`}
               >
-                {cat}
+                {CATEGORY_LABELS[cat] ?? cat}
               </button>
             );
           })}

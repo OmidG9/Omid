@@ -50,6 +50,7 @@ export default function ContactForm() {
       };
       const { visitorId, sessionId } = analytics.identity();
       const snapshot = sessionState.snapshot();
+      analytics.formSubmit({ formTimeMs: elapsed() ?? undefined });
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,11 +74,13 @@ export default function ContactForm() {
         reset();
         analytics.formSuccess({ formTimeMs: elapsed() ?? undefined });
       } else {
-        analytics.formError('SERVER_ERROR', { formTimeMs: elapsed() ?? undefined });
-        toast.error('ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
+        // Typed errors (VALIDATION_ERROR, RATE_LIMITED, SERVER_ERROR) are
+        // recorded server-side by the contact route (§5.3); no double count.
+        toast.error(json.error || 'ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
       }
     } catch {
-      analytics.formError('SERVER_ERROR');
+      // Network-level failure: the server never saw it, record it here.
+      analytics.formError('UNKNOWN_ERROR');
       toast.error('ارسال پیام ناموفق بود. لطفاً دوباره تلاش کنید.');
     } finally {
       setSubmitting(false);

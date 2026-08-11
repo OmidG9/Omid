@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { PercentageChange } from '@/lib/utils/metrics';
 import { formatChange } from '@/lib/utils/metrics';
-import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpLeft, Minus } from 'lucide-react';
 
 export function TrendIndicator({
   change,
@@ -21,9 +21,9 @@ export function TrendIndicator({
       }`}
     >
       {up || na ? (
-        <ArrowUpRight size={14} />
+        <ArrowUpLeft size={14} />
       ) : down ? (
-        <ArrowDownRight size={14} />
+        <ArrowDownLeft size={14} />
       ) : (
         <Minus size={14} />
       )}
@@ -39,6 +39,7 @@ interface MetricCardProps {
   icon?: LucideIcon;
   change?: PercentageChange;
   previousLabel?: string;
+  previousValue?: string | number;
   accent?: boolean;
 }
 
@@ -47,7 +48,8 @@ export default function MetricCard({
   value,
   icon: Icon,
   change,
-  previousLabel = 'vs previous period',
+  previousLabel = 'نسبت به دورهٔ قبل',
+  previousValue,
   accent,
 }: MetricCardProps) {
   return (
@@ -67,9 +69,14 @@ export default function MetricCard({
         )}
       </div>
       <p className="text-2xl font-bold tracking-tight text-slate-100">{value}</p>
-      {change?.change !== undefined && (
-        <div className="mt-2 flex items-center justify-between">
-          <TrendIndicator change={change} hint={previousLabel} />
+      {(change?.change !== undefined || previousValue !== undefined) && (
+        <div className="mt-2 flex items-center justify-between gap-2">
+          {change !== undefined ? <TrendIndicator change={change} hint={previousLabel} /> : null}
+          {previousValue !== undefined && (
+            <span className="text-[11px] text-slate-600">
+              دورهٔ قبل: <b className="tabular-nums">{previousValue}</b>
+            </span>
+          )}
         </div>
       )}
     </div>

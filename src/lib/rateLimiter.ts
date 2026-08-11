@@ -4,22 +4,25 @@
  * If UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN are not set (local dev),
  * falls back to a simple in-memory Map so the app still works without Redis.
  *
- * Limit: 5 requests per IP per 10-minute window.
+ * Limits are read from admin settings (§24) — defaults: 5 requests per IP per
+ * 10-minute window.
  */
 
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const RATE_LIMIT_WINDOW_SEC = 10 * 60; // for Redis TTL
+import { getSettings } from '@/lib/settings';
+import { getRedis } from '@/lib/db/redis';
+
+const MEMORY_RATE_LIMIT_DEFAULT_MAX = 5;
+const MEMORY_RATE_LIMIT_DEFAULT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 
 // ─── In-memory fallback ───────────────────────────────────────────────────────
 
 const memoryMap = new Map<string, number[]>();
 
-function checkMemoryLimit(ip: string): boolean {
+function checkMemoryLimit(ip: string, max: number, windowMs: number): boolean {
   const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const windowStart = now - windowMs;
   const hits = (memoryMap.get(ip) ?? []).filter((t) => t > windowStart);
-  if (hits.length >= RATE_LIMIT_MAX) return true;
+  if (hits.length >= max) return true;
   hits.push(now);
   memoryMap.set(ip, hits);
   return false;
@@ -27,39 +30,25 @@ function checkMemoryLimit(ip: string): boolean {
 
 // ─── Redis sliding-window (sorted set) ───────────────────────────────────────
 
-let redisClient: import('@upstash/redis').Redis | null = null;
-
-function getRedis(): import('@upstash/redis').Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
-
-  if (!redisClient) {
-    // Lazy require avoids errors when the package is present but env vars are absent
-    const { Redis } =
-      require('@upstash/redis') as typeof import('@upstash/redis');
-    redisClient = new Redis({ url, token });
-  }
-  return redisClient;
-}
-
-async function checkRedisLimit(ip: string): Promise<boolean> {
-  const redis = getRedis()!;
+async function checkRedisLimit(ip: string, max: number, windowMs: number): Promise<boolean> {
+  const redis = getRedis();
+  if (!redis) return false;
   const key = `rl:contact:${ip}`;
   const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const windowStart = now - windowMs;
+  const ttlSec = Math.max(60, Math.ceil(windowMs / 1000));
 
   // Atomic pipeline: remove stale, add current, count, refresh TTL
   const pipeline = redis.pipeline();
   pipeline.zremrangebyscore(key, 0, windowStart);
   pipeline.zadd(key, { score: now, member: String(now) });
   pipeline.zcard(key);
-  pipeline.expire(key, RATE_LIMIT_WINDOW_SEC);
+  pipeline.expire(key, ttlSec);
 
   const results = await pipeline.exec();
   const count = results[2] as number;
 
-  return count > RATE_LIMIT_MAX;
+  return count > max;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -67,21 +56,31 @@ async function checkRedisLimit(ip: string): Promise<boolean> {
 /**
  * Returns `true` when the given IP has exceeded the rate limit.
  * Uses Redis when env vars are present, in-memory Map otherwise.
+ * Thresholds come from the persisted admin settings (§24).
  */
 export async function isRateLimited(ip: string): Promise<boolean> {
+  let settings;
+  try {
+    settings = await getSettings();
+  } catch {
+    settings = null;
+  }
+  const max = settings?.rateLimitPerIp ?? MEMORY_RATE_LIMIT_DEFAULT_MAX;
+  const windowMs = (settings?.rateLimitWindowMin ?? 10) * 60 * 1000;
+  const windowMsEffective = windowMs || MEMORY_RATE_LIMIT_DEFAULT_WINDOW_MS;
+
   try {
     if (getRedis()) {
-      return await checkRedisLimit(ip);
+      return await checkRedisLimit(ip, max, windowMsEffective);
     }
   } catch (err) {
     // Redis failure → fall through to memory limiter so the API stays up
     console.warn('[rateLimiter] Redis error, falling back to memory:', err);
   }
-  return checkMemoryLimit(ip);
+  return checkMemoryLimit(ip, max, windowMsEffective);
 }
 
 /** Test helper: clear the in-memory limiter state between test cases. */
 export function resetRateLimiterForTests(): void {
   memoryMap.clear();
-  redisClient = null;
 }

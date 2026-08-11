@@ -188,7 +188,7 @@ export default function Hero() {
                   ?.scrollIntoView({ behavior: 'smooth' })
               }
             >
-              <span className="text-xs tracking-widest uppercase">Scroll</span>
+              <span className="text-xs tracking-widest uppercase">اسکرول</span>
               <ArrowDown size={16} />
             </motion.div>
           </motion.div>

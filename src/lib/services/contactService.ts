@@ -13,6 +13,7 @@ import { CONTACT_STATUS, CONTACT_PROCESSING, CONTACT_TIMELINE_EVENT } from '@/ty
 import { TRAFFIC_SOURCE, type TrafficSource } from '@/types/analytics';
 import { classifySource, parseClientInfo } from '@/lib/analytics/userAgent';
 import { dateKey } from '@/lib/utils/date';
+import { createHash } from 'node:crypto';
 
 export interface PersistContactInput {
   name: string;
@@ -32,6 +33,10 @@ export interface PersistContactInput {
   campaign?: string;
   /** Client-measured lead journey timestamps for the timeline (§37). */
   timeline?: TimelineSnapshot;
+  /** Effective spam threshold from settings (§47). */
+  spamThreshold?: number;
+  /** Duplicate window in ms from settings (§50). */
+  duplicateWindowMs?: number;
 }
 
 /** Optional client-provided timestamps used to reconstruct the lead journey. */
@@ -55,12 +60,17 @@ function timeline(name: ContactTimelineEvent['name'], at: number, detail?: strin
 /**
  * Deterministic but intentionally simple spam heuristics (MVP). Returns a
  * 0–100 score plus human-readable flags.
+ *
+ * Timing signals (§46): a submission that happened suspiciously fast after the
+ * form was opened contributes SUSPICIOUS points but never auto-blocks on its
+ * own — it is only one signal among several.
  */
 export function scoreSpam(input: {
   name: string;
   email: string;
   message: string;
   userAgent?: string;
+  formTimeMs?: number;
 }): { score: number; flags: string[] } {
   let score = 0;
   const flags: string[] = [];
@@ -87,6 +97,11 @@ export function scoreSpam(input: {
     score += 20;
     flags.push('suspicious-ua');
   }
+  // §46 timing: form filled in under 3 seconds is humanly implausible.
+  if (typeof input.formTimeMs === 'number' && input.formTimeMs >= 0 && input.formTimeMs < 3000) {
+    score += 15;
+    flags.push('too-fast');
+  }
   if (score > 0) {
     // Cap per-rule weighting: the most extreme submissions reach the threshold
     // so real users with a single link still land below it.
@@ -95,13 +110,9 @@ export function scoreSpam(input: {
   return { score, flags };
 }
 
-/** Deterministic duplicate key within the configured window (email, not full text). */
+/** SHA-256 duplicate key within the configured window (§50). */
 function duplicateHash(email: string): string {
-  try {
-    return `sha256:${email.trim().toLowerCase()}`;
-  } catch {
-    return `sha1:${email.trim().toLowerCase()}`;
-  }
+  return `sha256:${createHash('sha256').update(email.trim().toLowerCase()).digest('hex')}`;
 }
 
 export async function persistContact(input: PersistContactInput): Promise<PersistContactResult> {
@@ -110,12 +121,22 @@ export async function persistContact(input: PersistContactInput): Promise<Persis
   const ua = input.userAgent ?? '';
   const device = parseClientInfo(ua);
   const source = input.source ?? classifySource({ referrer: input.referrer });
-  const spam = scoreSpam(input);
+  const formTimeMs =
+    input.timeline?.startedAt && input.timeline.startedAt > 0
+      ? Math.max(0, now - input.timeline.startedAt)
+      : undefined;
+  const spam = scoreSpam({ ...input, formTimeMs });
+  const spamThreshold = input.spamThreshold ?? 60;
 
   const dupHash = duplicateHash(input.email);
-  const isDuplicate = !(await store.claimDuplicate(dupHash, `${now}:${input.email}`));
-
   const id = crypto.randomUUID();
+  const dupOwner = await store.claimDuplicate(
+    dupHash,
+    id,
+    input.duplicateWindowMs ? Math.ceil(input.duplicateWindowMs / 1000) : undefined
+  );
+  const isDuplicate = dupOwner !== null;
+
   const contact: ContactRequest = {
     id,
     name: input.name.trim().slice(0, 60),
@@ -123,7 +144,7 @@ export async function persistContact(input: PersistContactInput): Promise<Persis
     subject: input.subject.trim().slice(0, 200),
     message: input.message.trim().slice(0, 2000),
     status: isDuplicate ? CONTACT_STATUS.SPAM : CONTACT_STATUS.NEW,
-    processing: spam.score >= 60 || isDuplicate
+    processing: spam.score >= spamThreshold || isDuplicate
       ? CONTACT_PROCESSING.SPAM
       : CONTACT_PROCESSING.RECEIVED,
     source,
@@ -137,14 +158,14 @@ export async function persistContact(input: PersistContactInput): Promise<Persis
     language: undefined,
     spamScore: spam.score,
     spamFlags: spam.flags,
-    duplicateOf: isDuplicate ? 'flagged' : undefined,
+    duplicateOf: isDuplicate ? dupOwner : undefined,
     createdAt: now,
     timeline: buildTimeline(input.timeline, now, input.projectSlug),
   };
 
   await store.recordContact(contact);
-  await store.bumpDailyCounter(dateKey(now), spam.score >= 60 || isDuplicate ? 'spam' : 'contacts');
-  return { contact, isDuplicate };
+  await store.bumpDailyCounter(dateKey(now), spam.score >= spamThreshold || isDuplicate ? 'spam' : 'contacts');
+  return { contact, isDuplicate, duplicateOf: isDuplicate ? dupOwner : undefined };
 }
 
 /**

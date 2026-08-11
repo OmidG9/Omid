@@ -117,7 +117,7 @@ export default function Contact() {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse shrink-0" />
                 <p className="text-green-300 text-sm font-medium">
-                  {portfolio.availability} — آماده بررسی فرصت‌های شغلی
+                  {portfolio.availability} — بررسی فرصت‌های شغلی
                 </p>
               </div>
             </div>
