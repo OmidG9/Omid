@@ -30,6 +30,16 @@ export interface PersistContactInput {
   /** Server-assigned; respects order of the analytics pipeline. */
   source?: TrafficSource;
   campaign?: string;
+  /** Client-measured lead journey timestamps for the timeline (§37). */
+  timeline?: TimelineSnapshot;
+}
+
+/** Optional client-provided timestamps used to reconstruct the lead journey. */
+export interface TimelineSnapshot {
+  arrivedAt?: number;
+  projectViewedAt?: number;
+  openedAt?: number;
+  startedAt?: number;
 }
 
 export interface PersistContactResult {
@@ -127,12 +137,46 @@ export async function persistContact(input: PersistContactInput): Promise<Persis
     language: undefined,
     spamScore: spam.score,
     spamFlags: spam.flags,
-    duplicateOf: undefined,
+    duplicateOf: isDuplicate ? 'flagged' : undefined,
     createdAt: now,
-    timeline: [timeline(CONTACT_TIMELINE_EVENT.SUBMITTED_FORM, now)],
+    timeline: buildTimeline(input.timeline, now, input.projectSlug),
   };
 
   await store.recordContact(contact);
   await store.bumpDailyCounter(dateKey(now), spam.score >= 60 || isDuplicate ? 'spam' : 'contacts');
   return { contact, isDuplicate };
+}
+
+/**
+ * Reconstruct the lead journey from client snapshots plus server-truth events.
+ * Every client timestamp is optional; server events (submit, store, email) are
+ * always present and ordered last.
+ */
+function buildTimeline(snap: TimelineSnapshot | undefined, now: number, projectSlug?: string): ContactTimelineEvent[] {
+  const tl: ContactTimelineEvent[] = [];
+
+  const push = (name: ContactTimelineEvent['name'], at: number | undefined, detail?: string) => {
+    if (at !== undefined && at > 0 && at <= now) tl.push(timeline(name, at, detail));
+  };
+
+  // Ordered by journey; client events are dropped when absent.
+  push(CONTACT_TIMELINE_EVENT.ARRIVED, snap?.arrivedAt);
+  push(CONTACT_TIMELINE_EVENT.VIEWED_PROJECT, snap?.projectViewedAt, projectSlug);
+  push(CONTACT_TIMELINE_EVENT.OPENED_FORM, snap?.openedAt);
+  push(CONTACT_TIMELINE_EVENT.STARTED_FORM, snap?.startedAt);
+  tl.push(timeline(CONTACT_TIMELINE_EVENT.SUBMITTED_FORM, now));
+  tl.push(timeline(CONTACT_TIMELINE_EVENT.REQUEST_STORED, now));
+
+  return tl;
+}
+
+/** Append a post-persist event (e.g. email result) onto a stored lead. */
+export async function appendTimeline(contactId: string, emailSent: boolean): Promise<void> {
+  const store = getStore();
+  const contact = await store.getContact(contactId);
+  if (!contact) return;
+  const evt = emailSent
+    ? timeline(CONTACT_TIMELINE_EVENT.EMAIL_SENT, Date.now())
+    : timeline(CONTACT_TIMELINE_EVENT.EMAIL_ERROR, Date.now());
+  await store.updateContact(contactId, { timeline: [...contact.timeline, evt] });
 }

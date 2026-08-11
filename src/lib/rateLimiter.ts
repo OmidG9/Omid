@@ -79,3 +79,9 @@ export async function isRateLimited(ip: string): Promise<boolean> {
   }
   return checkMemoryLimit(ip);
 }
+
+/** Test helper: clear the in-memory limiter state between test cases. */
+export function resetRateLimiterForTests(): void {
+  memoryMap.clear();
+  redisClient = null;
+}

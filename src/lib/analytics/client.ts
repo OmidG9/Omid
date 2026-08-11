@@ -148,6 +148,11 @@ export const analytics = {
     this.pageView();
   },
 
+  /** Current anonymous visitor/session ids (used to attribute contact leads). */
+  identity(): { visitorId: string; sessionId: string } {
+    return { visitorId: ensureVisitor(), sessionId: ensureSession() };
+  },
+
   pageView(): void {
     trackBase('PAGE_VIEW', {}, utmParams());
   },

@@ -8,10 +8,12 @@
 
 import { useEffect } from 'react';
 import { analytics } from '@/lib/analytics/client';
+import { sessionState } from '@/lib/analytics/sessionState';
 
 export default function AnalyticsTracker() {
   useEffect(() => {
     analytics.init();
+    sessionState.init();
   }, []);
   return null;
 }

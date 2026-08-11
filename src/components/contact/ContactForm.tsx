@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Send, Mail, MessageSquare, User } from 'lucide-react';
 import { ContactFormData } from '@/lib/contactSchema';
 import { analytics } from '@/lib/analytics/client';
+import { sessionState } from '@/lib/analytics/sessionState';
 
 export default function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
@@ -20,6 +21,7 @@ export default function ContactForm() {
     viewSent.current = true;
     openedAt.current = performance.now();
     analytics.formView();
+    sessionState.openForm();
   }, []);
 
   const {
@@ -36,6 +38,7 @@ export default function ContactForm() {
     analytics.formStart({
       formTimeMs: startedAt.current ? Math.round(startedAt.current - openedAt.current) : undefined,
     });
+    sessionState.startForm();
   };
 
   const onSubmit = async (data: ContactFormData) => {
@@ -45,11 +48,23 @@ export default function ContactForm() {
         const base = startedAt.current || openedAt.current;
         return base ? Math.round(performance.now() - base) : null;
       };
+      const { visitorId, sessionId } = analytics.identity();
+      const snapshot = sessionState.snapshot();
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // company is the honeypot field – always empty for real users
-        body: JSON.stringify({ ...data, company: '' }),
+        body: JSON.stringify({
+          ...data,
+          company: '',
+          visitorId,
+          sessionId,
+          projectSlug: snapshot.projectSlug ?? null,
+          arrivedAt: snapshot.arrivedAt || null,
+          projectViewedAt: snapshot.projectViewedAt ?? null,
+          openedAt: snapshot.openedAt ?? null,
+          startedAt: snapshot.startedAt ?? null,
+        }),
       });
       const json = await res.json();
 

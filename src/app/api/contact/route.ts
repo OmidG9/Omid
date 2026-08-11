@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { contactSchema } from '@/lib/contactSchema';
 import { sendContactEmail } from '@/lib/email';
 import { isRateLimited } from '@/lib/rateLimiter';
-import { persistContact } from '@/lib/services/contactService';
+import { persistContact, appendTimeline } from '@/lib/services/contactService';
 import { logSecurityEvent } from '@/lib/services/securityService';
 import { SECURITY_EVENT } from '@/types/security';
 
@@ -51,7 +51,24 @@ export async function POST(request: NextRequest) {
     body = null;
   }
 
-  // Zod validation (includes honeypot field "company")
+  // Honeypot check happens BEFORE Zod validation so a filled hidden field is
+  // never surfaced to the bot as a validation error (see master prompt §45).
+  // The schema deliberately knows nothing about "company" — it is stripped as
+  // an unknown key and never stored.
+  const raw = (body ?? {}) as Record<string, unknown>;
+  const company = typeof raw.company === 'string' ? raw.company : '';
+  if (company.length > 0) {
+    await logSecurityEvent({
+      type: SECURITY_EVENT.SPAM_DETECTED,
+      ip,
+      path: '/api/contact',
+      reason: 'honeypot filled',
+    });
+    // Silently accept to avoid tipping off bots.
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+
+  // Zod validation
   const result = contactSchema.safeParse(body);
   if (!result.success) {
     await logSecurityEvent({
@@ -63,13 +80,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid input.' }, { status: 400 });
   }
 
-  const { name, email, message, company } = result.data;
+  const { name, email, message } = result.data;
 
-  // Honeypot check – bots fill in the hidden "company" field
-  if (company && company.length > 0) {
-    // Silently accept to avoid tipping off bots
-    return NextResponse.json({ ok: true }, { status: 200 });
-  }
+  // Optional attribution metadata sent by the client SDK (§36–37). All values
+  // are re-validated here; they are hints, never trusted blindly.
+  const b = (body ?? {}) as Record<string, unknown>;
+  const projectSlug =
+    typeof b.projectSlug === 'string' && b.projectSlug.trim() ? b.projectSlug.trim().slice(0, 64) : undefined;
+  const visitorId = typeof b.visitorId === 'string' && b.visitorId ? b.visitorId.slice(0, 64) : undefined;
+  const sessionId = typeof b.sessionId === 'string' && b.sessionId ? b.sessionId.slice(0, 64) : undefined;
+  const num = (v: unknown, min: number, max: number) =>
+    typeof v === 'number' && v >= min && v <= max ? v : undefined;
+  const timeline = {
+    arrivedAt: num(b.arrivedAt, 0, Date.now()),
+    projectViewedAt: num(b.projectViewedAt, 0, Date.now()),
+    openedAt: num(b.openedAt, 0, Date.now()),
+    startedAt: num(b.startedAt, 0, Date.now()),
+  };
 
   try {
     // Persist + classify first; persistence outlives SMTP failure.
@@ -81,6 +108,10 @@ export async function POST(request: NextRequest) {
       ip,
       userAgent,
       referrer,
+      projectSlug,
+      visitorId,
+      sessionId,
+      timeline,
     });
 
     if (contact.spamScore >= 60 || isDuplicate) {
@@ -102,6 +133,9 @@ export async function POST(request: NextRequest) {
       emailOk = false;
       console.error('[contact] email send failed (request kept):', error);
     }
+
+    // Timeline: record the send outcome on the stored lead.
+    await appendTimeline(contact.id, emailOk);
 
     return NextResponse.json(
       { ok: true, stored: true, emailSent: emailOk },

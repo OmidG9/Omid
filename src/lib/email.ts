@@ -62,7 +62,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 // ─── HTML Sanitiser ──────────────────────────────────────────────────────────
 
-function escapeHtml(raw: string): string {
+/** Escape text destined for HTML email bodies so user content cannot inject markup. */
+export function escapeHtml(raw: string): string {
   return raw
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -78,7 +79,7 @@ function escapeHtml(raw: string): string {
  * field (From, To, Subject, Reply-To, etc.). Without this a malicious user
  * could inject extra headers by embedding "\r\n" in their name or email.
  */
-function sanitizeHeader(value: string): string {
+export function sanitizeHeader(value: string): string {
   return value.replace(/[\r\n\0]/g, '').trim();
 }
 

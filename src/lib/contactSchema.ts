@@ -10,8 +10,6 @@ export const contactSchema = z.object({
     .string()
     .min(10, 'پیام باید حداقل ۱۰ کاراکتر باشد')
     .max(2000, 'پیام نباید بیشتر از ۲۰۰۰ کاراکتر باشد'),
-  /** Honeypot – bots fill this, humans leave it empty */
-  company: z.string().max(0, '').optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactSchema>;
