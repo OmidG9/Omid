@@ -93,7 +93,8 @@ export async function POST(request: NextRequest) {
       path: '/api/contact',
       reason: 'honeypot filled',
     });
-    // Silently accept to avoid tipping off bots.
+    // Recorded as analytics only (server-side); the bot still sees a silent 200.
+    await trackFormError('SPAM_BLOCKED', body);
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
@@ -158,6 +159,7 @@ export async function POST(request: NextRequest) {
         reason: 'duplicate submission',
         meta: { score: contact.spamScore },
       });
+      await trackFormError('SPAM_BLOCKED', body);
     } else if (contact.spamScore > 0 && contact.spamScore < settings.spamScoreThreshold) {
       await logSecurityEvent({
         type: SECURITY_EVENT.SUSPICIOUS_REQUEST,
@@ -174,6 +176,7 @@ export async function POST(request: NextRequest) {
         reason: `spamScore=${contact.spamScore}${isDuplicate ? ', duplicate' : ''}`,
         meta: { score: contact.spamScore },
       });
+      await trackFormError('SPAM_BLOCKED', body);
     }
 
     // SMTP send — failures are caught so the request still succeeds when
@@ -184,6 +187,8 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       emailOk = false;
       console.error('[contact] email send failed (request kept):', error);
+      // §5.3: record EMAIL_ERROR as a form-health signal; the lead is already stored.
+      await trackFormError('EMAIL_ERROR', body);
     }
 
     // Timeline: record the send outcome on the stored lead.

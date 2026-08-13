@@ -81,6 +81,16 @@ export default async function SettingsPage() {
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
+              <dt className="text-slate-500">دیتابیس (MySQL)</dt>
+              <dd className="text-slate-300">
+                {health.mysql.configured
+                  ? health.mysql.reachable
+                    ? 'متصل و قابل دسترس'
+                    : 'پیکربندی شده اما در دسترس نیست'
+                  : 'پیکربندی نشده (مکانیزم حافظه)'}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
               <dt className="text-slate-500">Redis</dt>
               <dd className="text-slate-300">
                 {health.redis.configured
@@ -129,8 +139,16 @@ export default async function SettingsPage() {
               <span className="text-slate-300">{process.env.ADMIN_SECRET ? 'پیکربندی‌شده' : 'تنظیم نشده'}</span>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-slate-800/40 border border-slate-800/80 p-3">
+              <span className="text-slate-500">DATABASE_URL (MySQL)</span>
+              <span className="text-slate-300">
+                {backend === 'mysql' ? 'متصل' : 'پیکربندی نشده'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-slate-800/40 border border-slate-800/80 p-3">
               <span className="text-slate-500">UPSTASH_REDIS</span>
-              <span className="text-slate-300">{backend === 'redis' ? 'متصل' : 'پیکربندی نشده (مکانیزم حافظه)'}</span>
+              <span className="text-slate-300">
+                {health.redis.configured ? 'پیکربندی‌شده' : 'پیکربندی نشده (cache/rate-limit)'}
+              </span>
             </div>
           </div>
         </Card>

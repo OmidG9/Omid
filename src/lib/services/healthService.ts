@@ -4,14 +4,16 @@
  * last email outcome, storage backend status and form error rate.
  */
 
-import { getStore, storeBackend } from '@/lib/db';
+import { getStore, storeBackend, type StoreBackend } from '@/lib/db';
 import { redisPing, isRedisConfigured } from '@/lib/db/redis';
+import { mySqlPing, isMySqlConfigured } from '@/lib/db/mysql';
 import { CONTACT_TIMELINE_EVENT } from '@/types/contacts';
 import type { ContactRequest } from '@/types/contacts';
 import { startOfDayUtc, DAY_MS, dateKey } from '@/lib/utils/date';
 
 export interface HealthSnapshot {
-  backend: 'redis' | 'memory';
+  backend: StoreBackend;
+  mysql: { configured: boolean; reachable: boolean };
   redis: { configured: boolean; reachable: boolean };
   lastEventAt: number;
   lastEventAgeSec: number | null;
@@ -71,9 +73,11 @@ export async function getHealthSnapshot(now = Date.now()): Promise<HealthSnapsho
   }
 
   const redisReachable = isRedisConfigured() ? await redisPing() : false;
+  const mysqlReachable = isMySqlConfigured() ? await mySqlPing() : false;
 
   return {
     backend: storeBackend(),
+    mysql: { configured: isMySqlConfigured(), reachable: mysqlReachable },
     redis: { configured: isRedisConfigured(), reachable: redisReachable },
     lastEventAt,
     lastEventAgeSec: ageSec(lastEventAt, now),
