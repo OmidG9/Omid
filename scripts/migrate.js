@@ -8,6 +8,8 @@
  *
  * Usage:
  *   DATABASE_URL=mysql://user:pass@host:3306/db npm run db:migrate
+ *
+ * The target database is created automatically if it does not exist yet.
  */
 
 'use strict';
@@ -30,6 +32,37 @@ for (const file of ['.env.local', '.env']) {
 const MIGRATIONS_DIR = path.join(process.cwd(), 'db', 'migrations');
 const TABLE = 'schema_migrations';
 
+// Parse mysql://user:pass@host:port/db and return the database name.
+function databaseNameFromUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.pathname.replace(/^\//, '').replace(/\/$/, '');
+  } catch {
+    return null;
+  }
+}
+
+// Create the database if it does not exist. Connects to the server without
+// selecting a database so an unknown database never blocks us.
+async function ensureDatabase(url) {
+  const dbName = databaseNameFromUrl(url);
+  if (!dbName) {
+    throw new Error(`Could not parse database name from DATABASE_URL`);
+  }
+  const u = new URL(url);
+  u.pathname = '/';
+  const server = await mysql.createConnection({ uri: u.toString(), timezone: 'Z' });
+  try {
+    await server.query(
+      `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+  } finally {
+    await server.end();
+  }
+  console.log(`[db:migrate] database "${dbName}" ready`);
+  return dbName;
+}
+
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -47,6 +80,8 @@ async function main() {
     console.error(`[db:migrate] No .sql files found in ${MIGRATIONS_DIR}`);
     process.exit(1);
   }
+
+  await ensureDatabase(url);
 
   const conn = await mysql.createConnection({ uri: url, multipleStatements: true, timezone: 'Z' });
   console.log('[db:migrate] connected');
