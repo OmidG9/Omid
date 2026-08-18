@@ -18,8 +18,23 @@ const MEMORY_RATE_LIMIT_DEFAULT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 
 const memoryMap = new Map<string, number[]>();
 
+/** Sweep expired entries so the dev fallback cannot grow unbounded. */
+let lastMemorySweep = 0;
+function sweepMemory(windowMs: number): void {
+  const now = Date.now();
+  if (now - lastMemorySweep < 60_000) return; // at most once a minute
+  lastMemorySweep = now;
+  const cutoff = now - windowMs;
+  for (const [ip, hits] of memoryMap) {
+    const live = hits.filter((t) => t > cutoff);
+    if (live.length === 0) memoryMap.delete(ip);
+    else if (live.length !== hits.length) memoryMap.set(ip, live);
+  }
+}
+
 function checkMemoryLimit(ip: string, max: number, windowMs: number): boolean {
   const now = Date.now();
+  sweepMemory(windowMs);
   const windowStart = now - windowMs;
   const hits = (memoryMap.get(ip) ?? []).filter((t) => t > windowStart);
   if (hits.length >= max) return true;

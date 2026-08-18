@@ -18,6 +18,7 @@ import { logSecurityEvent } from '@/lib/services/securityService';
 import { trackEvent } from '@/lib/analytics/tracking';
 import { getSettings } from '@/lib/settings';
 import { SECURITY_EVENT } from '@/types/security';
+import { clientIp } from '@/lib/utils/ip';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -48,12 +49,10 @@ async function trackFormError(errorType: string, body: unknown): Promise<void> {
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  // Resolve client IP – prefer leftmost entry in x-forwarded-for (real client
-  // behind Vercel / Nginx), fall back to x-real-ip, then 'unknown'.
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown';
+  // Resolve client IP through the trusted resolver: on Vercel the real client
+  // is the leftmost x-forwarded-for entry; elsewhere only x-real-ip (set by
+  // our own proxy) is trusted — see src/lib/utils/ip.ts.
+  const ip = clientIp(request);
 
   const userAgent = request.headers.get('user-agent') ?? 'unknown';
   const referrer = request.headers.get('referer');

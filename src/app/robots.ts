@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { getSiteUrl } from '@/lib/site';
 
-const BASE_URL = 'https://omidghanbari.dev';
+const BASE_URL = getSiteUrl();
 
 export default function robots(): MetadataRoute.Robots {
   return {

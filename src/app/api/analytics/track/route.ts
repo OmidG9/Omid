@@ -13,16 +13,9 @@ import { isRateLimited } from '@/lib/rateLimiter';
 import { logSecurityEvent } from '@/lib/services/securityService';
 import { SECURITY_EVENT } from '@/types/security';
 import { SESSION_COOKIE, verifySessionToken } from '@/lib/auth/session';
+import { clientIp } from '@/lib/utils/ip';
 
 export const runtime = 'nodejs';
-
-function clientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown'
-  );
-}
 
 function clientUserAgent(request: NextRequest): string {
   return request.headers.get('user-agent') ?? '';

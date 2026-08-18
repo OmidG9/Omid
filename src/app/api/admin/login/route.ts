@@ -15,6 +15,7 @@ import {
   verifyAdminPassword,
 } from '@/lib/auth/session';
 import { logSecurityEvent } from '@/lib/services/securityService';
+import { clientIp } from '@/lib/utils/ip';
 import { SECURITY_EVENT } from '@/types/security';
 import { z } from 'zod';
 
@@ -23,14 +24,6 @@ export const runtime = 'nodejs';
 const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
-
-function clientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown'
-  );
-}
 
 export async function POST(request: NextRequest) {
   const ip = clientIp(request);
