@@ -77,7 +77,10 @@ export default function AnalyticsChart({
     <div>
       <svg
         role="img"
-        aria-label="نمودار ترافیک"
+        aria-label={`نمودار ترافیک${labels && labels.length ? ` · ${labels[0]} تا ${labels[labels.length - 1]}` : ''}`}
+        tabIndex={0}
+        focusable="true"
+        className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 rounded-lg"
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="none"
         style={{ width: '100%', maxHeight: height }}
@@ -136,6 +139,11 @@ export default function AnalyticsChart({
           ))}
         </div>
       )}
+      <p className="sr-only">
+        {clean.length > 0
+          ? `حداقل ${Math.min(...clean)}، حداکثر ${Math.max(...clean)}، مجموع ${clean.reduce((a, b) => a + b, 0)}`
+          : 'داده‌ای برای نمایش وجود ندارد'}
+      </p>
     </div>
   );
 }

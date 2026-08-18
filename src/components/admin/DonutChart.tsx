@@ -46,7 +46,10 @@ export default function DonutChart({
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         role="img"
-        aria-label="نمودار توزیع"
+        aria-label={`نمودار توزیع: ${data.map((d) => `${d.key} ${Math.round((d.value / (total || 1)) * 100)}٪`).join('، ') || 'بدون داده'}`}
+        tabIndex={0}
+        focusable="true"
+        className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 rounded-full"
         style={{ transform: 'rotate(-90deg)' }}
       >
         <defs>

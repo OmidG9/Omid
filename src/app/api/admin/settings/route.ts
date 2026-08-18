@@ -8,6 +8,8 @@ import { getSettings, saveSettings, type AdminSettings } from '@/lib/settings';
 
 export type { AdminSettings };
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const settings = await getSettings();
   return NextResponse.json({ ok: true, settings, persisted: true });

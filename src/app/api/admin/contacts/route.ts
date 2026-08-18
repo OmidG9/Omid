@@ -9,6 +9,8 @@ import { getStore } from '@/lib/db';
 import { parseRange } from '@/lib/services/rangeParam';
 import { CONTACT_STATUS } from '@/types/contacts';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const page = Math.max(1, Number(sp.get('page') ?? 1));
