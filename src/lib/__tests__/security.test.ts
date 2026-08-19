@@ -4,9 +4,11 @@ import { middleware } from '@/middleware';
 import {
   createSessionToken,
   verifySessionToken,
-  verifyAdminPassword,
-  getAdminPassword,
 } from '@/lib/auth/session';
+import {
+  hashAdminPassword,
+  verifyAdminPassword,
+} from '@/lib/auth/adminCredentials';
 import {
   isRateLimited,
   resetRateLimiterForTests,
@@ -65,12 +67,25 @@ describe('session tokens', () => {
     delete process.env.ADMIN_SECRET;
   });
 
-  it('verifies admin password in constant-time fashion (result-based)', async () => {
-    process.env.ADMIN_PASSWORD = 'correct-horse-battery';
-    expect(getAdminPassword()).toBe('correct-horse-battery');
-    expect(await verifyAdminPassword('correct-horse-battery')).toBe(true);
-    expect(await verifyAdminPassword('wrong-password')).toBe(false);
-    delete process.env.ADMIN_PASSWORD;
+  it('hashes a password with scrypt and verifies it in constant time', async () => {
+    const hash = await hashAdminPassword('correct-horse-battery');
+    expect(hash.startsWith('scrypt$')).toBe(true);
+    expect(await verifyAdminPassword('correct-horse-battery', hash)).toBe(true);
+    expect(await verifyAdminPassword('wrong-password', hash)).toBe(false);
+  });
+
+  it('produces a unique salt per hash (same password never hashes identically)', async () => {
+    const a = await hashAdminPassword('same-password');
+    const b = await hashAdminPassword('same-password');
+    expect(a).not.toBe(b);
+    expect(await verifyAdminPassword('same-password', a)).toBe(true);
+    expect(await verifyAdminPassword('same-password', b)).toBe(true);
+  });
+
+  it('rejects malformed or truncated hash strings', async () => {
+    expect(await verifyAdminPassword('x', 'not-a-valid-format')).toBe(false);
+    expect(await verifyAdminPassword('x', 'scrypt$1$2$3$4$badhex$deadbeef')).toBe(false);
+    expect(await verifyAdminPassword('x', '')).toBe(false);
   });
 });
 
