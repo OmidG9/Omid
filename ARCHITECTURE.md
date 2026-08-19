@@ -1,6 +1,6 @@
 # ARCHITECTURE — GhanbariOmid.ir Personal Intelligence Dashboard
 
-Status: MVP implementation baseline, updated after the hardening pass (2026-08).
+Status: MVP implementation baseline. Written after a full repository audit (Phase 0).
 
 ## 1. Existing Architecture (audit result)
 
@@ -10,96 +10,82 @@ Status: MVP implementation baseline, updated after the hardening pass (2026-08).
 - Contact: `react-hook-form` + `react-hot-toast` → `POST /api/contact`.
 - Validation: Zod (`src/lib/contactSchema.ts`) incl. honeypot `company` field.
 - Email: Nodemailer dark HTML template, header-injection + HTML escaping (`src/lib/email.ts`).
-- Rate limiting: `src/lib/rateLimiter.ts` — Upstash Redis sliding-window, in-memory Map fallback (with periodic sweep).
-- Storage: **MySQL (primary)** with Redis and in-memory backends behind one `DataStore` interface (`src/lib/db/`).
-- Auth: HMAC-signed session cookie, rate-limited login (`src/lib/auth/session.ts`).
+- Rate limiting: `src/lib/rateLimiter.ts` — Upstash Redis sliding-window, in-memory Map fallback.
+- Storage: **none** (no database, no auth, no chart lib, no tests).
 - Deploy: Vercel (Next.js auto-detect), Node.js runtime for API routes.
 
 ## 2. Decisions
 
 | Topic | Decision | Rationale |
 |---|---|---|
-| Persistence | MySQL primary (`DATABASE_URL`); Redis legacy fallback; memory for dev/tests | Full SQL: queryable analytics, integrity (FKs/checks), survives restarts; Redis kept working for existing setups. |
-| Settings | Stored in primary backend: MySQL `admin_setting` table → Redis → memory | Thresholds (rate limit, spam, retention) persist across restarts and instances. |
-| Auth | Lightweight HMAC session cookie (`ADMIN_SECRET`), rate-limited login | Zero new dependencies; server-side verified in `middleware.ts`; no silent dev fallback — `ALLOW_DEV_AUTH=1` required in dev, well-known dev values rejected in production. |
-| Retention | `scripts/retention.js` prunes `analytics_event`/`session`/`visitor`/`security_event`/`contact_duplicate` by configured days | Mirrors Redis TTLs (`src/lib/db/keys.ts`); contacts are never auto-pruned. |
-| Charts | Hand-rolled inline SVG components | Avoids recharts dependency; bundle stays small. |
-| Aggregation | Daily metrics derived on read from relational tables | Single source of truth, no dual-write drift; indexed on `occurred_at`/`started_at`. |
-| IP trust | `x-forwarded-for` trusted only on Vercel or with `TRUST_PROXY=1` | Raw header is spoofable; rate limits and spam scoring need a trustworthy IP (`src/lib/utils/ip.ts`). |
-| Security headers | CSP + HSTS + frame/referrer/permissions policy in `next.config.js` | Defense-in-depth on top of the pipeline. |
+| Persistence | Upstash Redis + in-memory fallback | `@upstash/redis` already a dependency (rate limiter); serverless-native; TTL retention built-in; no new vendor. |
+| Auth | Lightweight HMAC session cookie (`ADMIN_SECRET`), rate-limited login | Zero new dependencies; server-side verified in `middleware.ts`; single ADMIN role, role-aware structures. |
+| Charts | Hand-rolled inline SVG components | Avoids recharts dependency; bundle stays small; charts are simple (line/bar/donut). |
+| Aggregation | Daily metrics (`DailyMetric`) updated per event + raw events with TTL | Keeps dashboard queries bounded; re-runnable; retention per master prompt. |
 
 No other new third-party dependency is introduced.
 
-## 3. Data Model (MySQL primary)
+## 3. Data Model (Redis key design)
 
-Tables (see `db/migrations/`): `visitor`, `session`, `analytics_event`,
-`contact`, `contact_duplicate`, `security_event`, `admin_setting`, plus
-`schema_migrations` (runner bookkeeping).
+Prefixes: `ano:` (analytics), all values stored as JSON strings unless noted.
 
-- `analytics_event.event_id` is the idempotency key (dedupe).
-- FKs: `session → visitor`, `analytics_event → session/visitor` (CASCADE);
-  `contact.duplicate_of → contact` (SET NULL).
-- All timestamps DATETIME(3) UTC, read back as epoch ms.
-- Contacts are business data and are never pruned; admins archive via status.
+| Key | Type | Purpose | TTL |
+|---|---|---|---|
+| `ano:event:<id>` | string | Raw event JSON | 90 d |
+| `ano:visitor:<vid>` | hash | Visitor profile (first/last seen, device/browser/os, country, returning) | 1 y |
+| `ano:visitor:<vid>:ids` | set | session ids for a visitor | 90 d |
+| `ano:session:<sid>` | string | Session JSON (landing/exit, pageViews, duration, referrer, source) | 90 d |
+| `ano:dm:YYYY-MM-DD` | string | DailyMetric JSON (visitors, new, returning, sessions, views, contacts, spam, form funnel, errors) | long-term |
+| `ano:dm:idx` | set | all daily metric dates | long-term |
+| `ano:sec:<id>` | string | Security event JSON | 90 d |
+| `ano:sec:<id>/...` idx | lists | recent security events by type | 90 d |
+| `ct:contact:<id>` | string | Contact JSON | until archived/deleted |
+| `ct:idx` | set | contact ids | until archived/deleted |
+| `ct:hash:<sha>` | string | duplicate-detection hash → contact id | 24 h |
+| `rl:contact:<ip>` | zset | existing rate limiter | existing |
 
-Legacy Redis layout (kept for compatibility): `ano:` analytics, `ct:` contacts,
-`sec:` security, `rl:` rate limit — see `src/lib/db/keys.ts` and
-`src/lib/db/redisStore.ts`.
+Sessions are split: `ano:session:<sid>` for detail; visitor/session relationships via sets.
 
 ## 4. Tracking Pipeline
 
 ```
 Public site (client SDK, fire-and-forget, beacon)
   → POST /api/analytics/track   (validate, normalize, rate-limit)
-  → store event + update visitor/session records
+  → store event + update DailyMetric + visitor/session records
   → Dashboard reads via admin-only services (filtered by date range)
 ```
 
-- Analytics failures never break the public site: the client sends via
-  `sendBeacon` in a `try/catch`; the API route isolates errors per event.
-- Anonymous `visitorId` (UUID) + `sessionId` (UUID) are created client-side and
-  persisted in cookies (no fingerprinting).
+- Analytics failures never break the public site: the client sends via `sendBeacon` in a `try/catch`; the API route isolates errors per event.
+- Anonymous `visitorId` (UUID) + `sessionId` (UUID) are created client-side and persisted in cookies (no fingerprinting). Returning-visitor determined by existing visitor cookie within attribution window.
 
 ## 5. Metric Definitions
 
 - **Visitor**: anonymous identifier (`visitorId`) seen at least once in the period.
 - **New visitor**: first-ever event in the store during the period.
 - **Returning visitor**: visitor with events before the period start.
-- **Session**: interaction period with a 30-min timeout (configurable).
+- **Session**: interaction period with a 30-min timeout (configurable). Starts on `PAGE_VIEW`/`SESSION_START`, ended by timeout/period boundary.
 - **Page view**: `PAGE_VIEW` event for a route.
 - **Project view**: `PROJECT_VIEW` event (slug).
-- **Conversion rate**: successful submissions stored as contacts / contact-form
-  exposure (form views), same window. Denominator = `CONTACT_FORM_VIEW`.
-- **Project conversion**: contacts attributed to a project / project views, same window.
+- **Conversion rate**: successful submissions stored as contacts / contact-form exposure (form views), same window. Documented denominator = `CONTACT_FORM_VIEW`.
+- **Project conversion**: contacts attributed to a project / project views, same window & attribution rule.
 - **Bounce rate** (informational): sessions with exactly 1 page view.
-- **Form funnel**: CONTACT_FORM_VIEW → CONTACT_FORM_START → CONTACT_FORM_SUCCESS.
-- **Growth**: current vs previous equivalent-length period;
-  `calculatePercentageChange` handles 0→n, n→0, missing data.
+- **Form funnel**: CONTACT_FORM_VIEW → CONTACT_FORM_START → CONTACT_FORM_SUCCESS. Start rate, submission rate, abandonment = (starts − success)/starts.
+- **Growth**: current vs previous equivalent-length period; `calculatePercentageChange` handles 0→n, n→0, and missing data without misleading percentages.
 
 ## 6. Security Model
 
-- All `/admin/*` routes protected by `middleware.ts` (HMAC-signed session cookie);
-  all `/api/admin/*` also protected server-side (defense in depth).
-- Auth hardening: no silent dev fallback; `ALLOW_DEV_AUTH=1` opt-in in dev;
-  well-known dev secret/password rejected in production; fail-closed login.
-- Contact pipeline: server Zod validation → rate limit → honeypot → timing →
-  risk score → duplicates → persist → notify → analytics.
-- Contact persistence outlives email failure; analytics failure never
-  invalidates contacts.
-- Untrusted values sanitized/escaped at render, in email HTML, and for SMTP
-  headers (already in `email.ts`).
-- Security events (SPAM_DETECTED, RATE_LIMIT_TRIGGERED, INVALID_PAYLOAD,
-  BLOCKED_REQUEST, …) stored without private content.
-- Security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy,
-  Permissions-Policy, COOP) applied globally in `next.config.js`.
-- Client IP: `x-forwarded-for` trusted only on Vercel or behind an explicit
-  `TRUST_PROXY=1` reverse proxy (`src/lib/utils/ip.ts`).
+- All `/admin/*` routes protected by `middleware.ts` (HMAC-signed session cookie).
+- All `/api/admin/*` also protected server-side (defense in depth).
+- Contact pipeline: server Zod validation → rate limit → honeypot → timing → risk score → duplicates → persist → notify → analytics.
+- Contact persistence outlives email failure; analytics failure never invalidates contacts.
+- Untrusted values sanitized/escaped at render, in email HTML, and for SMTP headers (already in `email.ts`).
+- Security events (SPAM_DETECTED, RATE_LIMIT_TRIGGERED, INVALID_PAYLOAD, BLOCKED_REQUEST, …) stored without private content.
 
 ## 7. Admin Navigation (MVP)
 
 ```
 /admin               Dashboard
-/admin/analytics     Overview + Visitors / Pages / Traffic / Devices / Projects / Performance
+/admin/analytics     Overview (redirect to /admin) + Visitors / Pages / Traffic / Devices / Projects / Performance
 /admin/contacts      Requests
 /admin/security      Security
 /admin/settings      Settings (thresholds, retention)
@@ -107,50 +93,34 @@ Public site (client SDK, fire-and-forget, beacon)
 
 ## 8. Admin API Surface
 
-- `/api/admin/analytics/*` — overview, visitors, pages, traffic, devices, projects, performance
-- `/api/admin/contacts` + `/api/admin/contacts/[id]` + `/export`
+- `/api/admin/analytics/overview` (metrics, traffic series, top pages/projects/sources/devices, daily summary, form health, insights, alerts)
+- `/api/admin/analytics/visitors`, `/pages`, `/traffic`, `/devices`, `/projects`, `/performance`
+- `/api/admin/contacts` + `/api/admin/contacts/[id]` (detail, status, update)
+- `/api/admin/contacts/export` (CSV)
 - `/api/admin/security/overview`
-- `/api/admin/settings` (read/write thresholds; persisted to MySQL/Redis)
-- `/api/admin/login`, `/api/admin/logout`
+- `/api/admin/settings` (read/write thresholds with validation)
 
 ## 9. Environment Variables
 
-See `.env.local.example` for the full annotated list. Key ones:
-
 ```text
 ADMIN_SECRET                  # required for /admin auth (HMAC session key)
-ADMIN_PASSWORD                # required for /admin auth
-SITE_URL                      # canonical domain (default https://ghanbariomid.ir)
-DATABASE_URL                  # MySQL (primary storage)
-SMTP_*                        # contact email delivery
-UPSTASH_REDIS_REST_URL/TOKEN  # optional legacy backend / rate limiting
-ALLOW_DEV_AUTH=1              # dev-only opt-in for local fallback creds
-TRUST_PROXY=1                 # trust x-forwarded-for behind your own proxy
-CONTACT_TO                    # optional email override (falls back to SMTP_USER)
+ADMIN_PASSWORD                # optional; login compares HMAC rather than raw storage
+CONTACT_TO                    # optional override (falls back to SMTP_USER)
+SMTP_* / UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN   # existing
 ```
 
-## 10. Operations
-
-- Migrations: `npm run db:migrate` (idempotent, recorded in `schema_migrations`).
-- Retention: `npm run db:retention` (or `DRY_RUN=1` to preview) — prune old
-  analytics/sessions/security rows per the configured windows; schedule nightly.
-- Quality gate: `npm run check` (lint + typecheck + test). CI runs the same.
-- MySQL integration tests: `TEST_MYSQL_URL=... npm test`.
-
-## 11. Phases
+## 10. Phases
 
 0. Audit + this document ✅
-1. Foundation: store, types, auth, admin shell, UI kit, date ranges, services ✅
-2. Tracking: event system, client SDK, track API, wiring ✅
-3. Dashboard: overview + analytics pages + charts + insights/alerts ✅
-4. Contacts: persistence, contact admin, attribution, timeline, CSV ✅
-5. Security: anti-spam scoring, security events, `/admin/security` ✅
-6. Form intelligence: funnel, health, conversion ✅
-7. Polish: states, responsiveness, a11y, motion ✅
-8. Quality gate + hardening (auth, headers, retention, IP trust) ✅
+1. Foundation: store, types, auth, admin shell, UI kit, date ranges, services
+2. Tracking: event system, client SDK, track API, wiring
+3. Dashboard: overview + analytics pages + charts + insights/alerts
+4. Contacts: persistence, contact admin, attribution, timeline, CSV
+5. Security: anti-spam scoring, security events, `/admin/security`
+6. Form intelligence: funnel, health, conversion
+7. Polish: states, responsiveness, a11y, motion
+8. Quality gate: lint, typecheck, build, regression + security verification
 
-## 12. Explicitly Out of Scope (MVP)
+## 11. Explicitly Out of Scope (MVP)
 
-Microservices, Kafka/Elasticsearch/warehouse, WebSockets, CRM, marketing
-automation, ML/AI, session replay, heatmaps, fingerprinting, multi-tenant,
-enterprise RBAC, SOC dashboards.
+Microservices, Kafka/Elasticsearch/warehouse, WebSockets, CRM, marketing automation, ML/AI, session replay, heatmaps, fingerprinting, multi-tenant, enterprise RBAC, SOC dashboards.

@@ -5,28 +5,18 @@
  * runtime (middleware) and Node.js (API routes). The session is an
  * HMAC-SHA256 signed token: base64url(payload).base64url(sig).
  *
- * Secret/password policy (hardened):
- * - Production (`NODE_ENV=production`) requires real `ADMIN_SECRET` and
- *   `ADMIN_PASSWORD`; the well-known dev defaults are rejected there, and a
- *   missing secret disables auth (the login route then returns 500 with a
- *   clear message) instead of silently falling back to a guessable value.
- * - Development uses the dev fallbacks ONLY when explicitly opted in via
- *   `ALLOW_DEV_AUTH=1`. Without it, an unconfigured secret means auth is
- *   disabled locally too — no silent `admin`/`admin` login.
+ * Credentials are stored in the database (see adminCredentials.ts); this
+ * module only signs and verifies the session cookie.
+ *
+ * In development, when ADMIN_SECRET is absent, a non-secret dev value is used
+ * so the dashboard is testable locally. In production the secret is required.
  */
 
 export const SESSION_COOKIE = 'admin_session';
 export const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30; // 30 days
 
-// Dev-only fallbacks — never used in production and never used in
-// development unless ALLOW_DEV_AUTH=1 is set.
+// Dev-only fallback (NODE_ENV=development). Never used in production.
 const DEV_SIGNING_SECRET = 'ghanbariomid-dev-only-admin-secret-8f2a';
-const DEV_PASSWORD = 'admin';
-
-/** Dev fallbacks require an explicit opt-in flag outside production. */
-function devAuthAllowed(): boolean {
-  return process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEV_AUTH === '1';
-}
 
 const encoder = new TextEncoder();
 
@@ -47,37 +37,13 @@ function b64urlDecode(str: string): Uint8Array<ArrayBuffer> {
 
 export function getSigningSecret(): string | null {
   const fromEnv = process.env.ADMIN_SECRET;
-  if (fromEnv && fromEnv.trim()) {
-    const secret = fromEnv.trim();
-    // The dev secret is public knowledge — never accept it outside an
-    // explicit dev opt-in (protects against copying dev env into prod).
-    if (secret === DEV_SIGNING_SECRET && !devAuthAllowed()) {
-      console.warn('[auth] ADMIN_SECRET equals the known dev secret and was ignored; set a real secret.');
-      return null;
-    }
-    return secret;
-  }
-  if (devAuthAllowed()) return DEV_SIGNING_SECRET;
+  if (fromEnv && fromEnv.trim()) return fromEnv.trim();
+  if (process.env.NODE_ENV === 'development') return DEV_SIGNING_SECRET;
   return null;
 }
 
 export function isAuthConfigured(): boolean {
   return getSigningSecret() !== null;
-}
-
-/** Expected password for login. Dev fallback only with ALLOW_DEV_AUTH=1. */
-export function getAdminPassword(): string | null {
-  const fromEnv = process.env.ADMIN_PASSWORD;
-  if (fromEnv && fromEnv.trim()) {
-    const password = fromEnv.trim();
-    if (password === DEV_PASSWORD && !devAuthAllowed()) {
-      console.warn('[auth] ADMIN_PASSWORD equals the well-known dev password and was ignored; set a real password.');
-      return null;
-    }
-    return password;
-  }
-  if (devAuthAllowed()) return DEV_PASSWORD;
-  return null;
 }
 
 async function importKey(secret: string): Promise<CryptoKey> {
@@ -148,20 +114,4 @@ export async function verifySessionToken(token?: string | null): Promise<boolean
   } catch {
     return false;
   }
-}
-
-/** Constant-time-ish compare for the login password (digest-based). */
-export async function verifyAdminPassword(input: string): Promise<boolean> {
-  const expected = getAdminPassword();
-  if (!expected) return false;
-  const [a, b] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(input)),
-    crypto.subtle.digest('SHA-256', encoder.encode(expected)),
-  ]);
-  const av = new Uint8Array(a);
-  const bv = new Uint8Array(b);
-  if (av.length !== bv.length) return false;
-  let diff = 0;
-  for (let i = 0; i < av.length; i++) diff |= av[i] ^ bv[i];
-  return diff === 0;
 }

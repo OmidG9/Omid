@@ -7,7 +7,6 @@ import '@fontsource/vazirmatn/600.css';
 import '@fontsource/vazirmatn/700.css';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
-import { getSiteUrl } from '@/lib/site';
 
 const IntroOverlay = dynamic(() => import('@/components/IntroOverlay'), {
   ssr: false,
@@ -17,7 +16,7 @@ const AnalyticsTracker = dynamic(() => import('@/components/analytics/AnalyticsT
   ssr: false,
 });
 
-const BASE_URL = getSiteUrl();
+const BASE_URL = 'https://omidghanbari.dev';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

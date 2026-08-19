@@ -8,7 +8,6 @@ import { getStore } from '@/lib/db';
 import { CONTACT_STATUS } from '@/types/contacts';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
 
 type Ctx = { params: { id: string } };
 

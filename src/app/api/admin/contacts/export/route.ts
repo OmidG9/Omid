@@ -10,7 +10,6 @@ import { parseRange } from '@/lib/services/rangeParam';
 import { CONTACT_STATUS } from '@/types/contacts';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
 
 function escapeCsv(value: string): string {
   if (/[",\n\r]/.test(value)) {

@@ -9,7 +9,6 @@ import Container from '@/components/ui/Container';
 import Gallery from '@/components/projects/Gallery';
 import ProjectViewTracker from '@/components/analytics/ProjectViewTracker';
 import { getCategoryStyle, CATEGORY_LABELS } from '@/lib/categoryColors';
-import { getSiteUrl } from '@/lib/site';
 
 interface Props {
   params: { slug: string };
@@ -19,7 +18,7 @@ export async function generateStaticParams() {
   return portfolio.projects.map((p) => ({ slug: p.slug }));
 }
 
-const BASE_URL = getSiteUrl();
+const BASE_URL = 'https://omidghanbari.dev';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = portfolio.projects.find((p) => p.slug === params.slug);

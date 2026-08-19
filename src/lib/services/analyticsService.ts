@@ -154,14 +154,6 @@ function averageBounceRate(list: DailyMetric[]): number {
 
 /* ── public API ───────────────────────────────────────────────────────── */
 
-/** Loads aggregated daily metrics once so multiple views can share the read. */
-export async function loadRangeSummary(range: {
-  fromKey: string;
-  toKey: string;
-}): Promise<DailyMetric[]> {
-  return loadRange(range.fromKey, range.toKey);
-}
-
 export async function getOverview(range: {
   fromKey: string;
   toKey: string;
@@ -386,9 +378,9 @@ export async function getAnalyticsSubpage(
   }
 }
 
-export async function getPerformance(range: { fromKey: string; toKey: string }, rows?: DailyMetric[]) {
-  const loaded = rows ?? (await loadRange(range.fromKey, range.toKey));
-  const c = sumDaily(loaded);
+export async function getPerformance(range: { fromKey: string; toKey: string }) {
+  const rows = await loadRange(range.fromKey, range.toKey);
+  const c = sumDaily(rows);
   return {
     formViews: c.formViews,
     formStarts: c.formStarts,
@@ -403,9 +395,9 @@ export async function getPerformance(range: { fromKey: string; toKey: string }, 
   };
 }
 
-export async function getHealth(range: { fromKey: string; toKey: string }, rows?: DailyMetric[]) {
-  const loaded = rows ?? (await loadRange(range.fromKey, range.toKey));
-  const c = sumDaily(loaded);
+export async function getHealth(range: { fromKey: string; toKey: string }) {
+  const rows = await loadRange(range.fromKey, range.toKey);
+  const c = sumDaily(rows);
   return {
     spam: c.spam,
     contacts: c.contacts,

@@ -6,6 +6,7 @@ import { Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -18,7 +19,7 @@ export default function AdminLoginPage() {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       const json = await res.json();
       if (res.ok && json.ok) {
@@ -51,7 +52,21 @@ export default function AdminLoginPage() {
             مرکز فرماندهی ghanbariomid.ir
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
-            <label htmlFor="password" className=" block text-sm text-slate-300">
+            <label htmlFor="username" className="block text-sm text-slate-300">
+              نام کاربری
+            </label>
+            <input
+              id="username"
+              type="text"
+              autoComplete="username"
+              dir="ltr"
+              className="input-field"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="user-name"
+              autoFocus
+            />
+            <label htmlFor="password" className="block text-sm text-slate-300">
               رمز عبور
             </label>
             <input
@@ -63,7 +78,6 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              autoFocus
             />
             {error && (
               <p role="alert" className="text-xs text-red-400">
@@ -72,7 +86,7 @@ export default function AdminLoginPage() {
             )}
             <button
               type="submit"
-              disabled={submitting || password.length === 0}
+              disabled={submitting || username.length === 0 || password.length === 0}
               className="w-full btn-primary justify-center disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {submitting ? (

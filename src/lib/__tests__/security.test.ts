@@ -6,7 +6,6 @@ import {
   verifySessionToken,
   verifyAdminPassword,
   getAdminPassword,
-  getSigningSecret,
 } from '@/lib/auth/session';
 import {
   isRateLimited,
@@ -72,27 +71,6 @@ describe('session tokens', () => {
     expect(await verifyAdminPassword('correct-horse-battery')).toBe(true);
     expect(await verifyAdminPassword('wrong-password')).toBe(false);
     delete process.env.ADMIN_PASSWORD;
-  });
-
-  it('never enables the well-known dev secret/password without ALLOW_DEV_AUTH=1', async () => {
-    (process.env as { NODE_ENV?: string }).NODE_ENV = 'development';
-    // No env vars, no opt-in → auth stays disabled (no silent admin/admin).
-    expect(getAdminPassword()).toBeNull();
-    expect(await verifyAdminPassword('admin')).toBe(false);
-    expect(await verifyAdminPassword('anything')).toBe(false);
-    delete process.env.ALLOW_DEV_AUTH;
-    (process.env as { NODE_ENV?: string }).NODE_ENV = 'test';
-  });
-
-  it('rejects the well-known dev secret in production', async () => {
-    (process.env as { NODE_ENV?: string }).NODE_ENV = 'production';
-    process.env.ADMIN_SECRET = 'ghanbariomid-dev-only-admin-secret-8f2a';
-    process.env.ADMIN_PASSWORD = 'admin';
-    expect(getSigningSecret()).toBeNull();
-    expect(getAdminPassword()).toBeNull();
-    delete process.env.ADMIN_SECRET;
-    delete process.env.ADMIN_PASSWORD;
-    (process.env as { NODE_ENV?: string }).NODE_ENV = 'test';
   });
 });
 

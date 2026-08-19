@@ -15,13 +15,13 @@
 
 | اولویت | فاز | درصد فعلی | هدف این مرحله |
 |---|---|---|---|
-| ۱ | فاز ۸ — Testing & Quality Gate | ~۹۵٪ | انجام شد؛ فقط §۸۳ DoD دستی |
+| ۱ | فاز ۸ — Testing & Quality Gate | ~۱۵٪ | ایجاد تست، typecheck، بررسی build |
 | ۲ | فاز ۴ — Contacts | ~۶۰٪ | جستجو، تایملاین، attribution، CSV، Recent Requests |
 | ۳ | فاز ۳ — Dashboard | ~۶۵٪ | کارت Growth/Conversion، نمودار تعاملی، Form Health |
-| ۴ | فاز ۵ — Security | ~۹۵٪ | کامل؛ تست‌های error type اضافه شد |
-| ۵ | فاز ۲ — Analytics | ~۹۸٪ | رویدادها و error types کامل |
+| ۴ | فاز ۵ — Security | ~۷۵٪ | رفع نقایص honeypot، timing، threshold، duplicate |
+| ۵ | فاز ۲ — Analytics | ~۸۵٪ | رفع UTM، ثبت رویدادهای مفقود |
 | ۶ | Observability + Data Quality | ~۱۵٪ | پنل System Health و تعریف معیارها |
-| ۷ | فاز ۷ — Polish | ~۹۵٪ | a11y و caching کامل شد |
+| ۷ | فاز ۷ — Polish | ~۵۵٪ | error/loading boundaries، responsive، a11y |
 
 ---
 
@@ -72,7 +72,7 @@
 - [x] اجرای `npm run lint` و اصلاح خطاها
 - [x] اجرای `npm run typecheck` و رسیدن به صفر خطا
 - [x] اجرای `npm run build` (تست production build)
-- [~] بررسی دستی مسیر Definition of Done سند (§۸۳): Visitor → … → Admin Dashboard (نیازمند اجرا و تست دستی روی dev/محیط آنلاین)
+- [ ] بررسی دستی مسیر Definition of Done سند (§۸۳): Visitor → … → Admin Dashboard
 
 **معیار قبولی:** `lint`، `typecheck`، `build` و `test` همه سبز.
 
@@ -143,7 +143,7 @@
 ## ۳.۴ Insights و Alerts
 
 - [x] چک‌لیست کامل شدن rule-based insights (§۲۲): growth، top project، source→lead، device share، conversion drop
-- [x] آستانه‌های Alerts به تنظیمات واقعی وصل شوند (§۲۳، انجام شده — `analyticsService.ts:282-284` از Settings خوانده می‌شود)
+- [ ] آستانه‌های Alerts به تنظیمات واقعی وصل شوند (§۲۳، پس از مرحله ۴)
 
 **معیار قبولی:** داشبورد هر ۱۳ سؤال سند §۲ را در ~۳۰ ثانیه جواب می‌دهد.
 
@@ -197,17 +197,14 @@
 
 ## ۵.۲ رویدادهای مفقود (§۱۰)
 
-- [x] `SESSION_START`: ثبت هنگام شروع session جدید
-- [x] `CONTACT_FORM_SUBMIT`: ثبت هنگام ارسال فرم (جدا از SUCCESS/ERROR)
+- [ ] `SESSION_START`: ثبت هنگام شروع session جدید
+- [ ] `CONTACT_FORM_SUBMIT`: ثبت هنگام ارسال فرم (جدا از SUCCESS/ERROR)
 - [x] (بعد از آن) بررسی که `analyticsService` این رویدادها را مصرف می‌کند
 
 ## ۵.۳ Form Errorهای دقیق (§۴۱)
 
-- [x] `VALIDATION_ERROR` در route ثبت می‌شود
-- [x] `RATE_LIMITED` در route ثبت می‌شود
-- [x] `SPAM_BLOCKED` برای honeypot، duplicate و spam-scored ثبت می‌شود
-- [x] `EMAIL_ERROR` هنگام شکست SMTP ثبت می‌شود (lead حفظ می‌شود)
-- [x] تست‌های هر error type در `route.test.ts`
+- [ ] الان فقط `SERVER_ERROR` ثبت می‌شود
+- [ ] سرور باید `VALIDATION_ERROR`, `RATE_LIMITED`, `SPAM_BLOCKED`, `EMAIL_ERROR` را هم ثبت کند
 
 **معیار قبولی:** UTM ها در dashboard دیده می‌شوند؛ جدول رویدادها کامل؛ error categorization دقیق.
 
@@ -256,27 +253,26 @@
 
 ## ۷.۳ Accessibility (§۷۲)
 
-- [x] `role="img"` + `tabindex` مناسب برای SVG charts (AnalyticsChart و DonutChart: tabIndex=0 + focus-visible ring)
-- [x] خلاصه‌ی داده‌ها به‌صورت `sr-only` برای دسترسی‌پذیری در نمودارها
+- [ ] `role="img"` + `tabindex` مناسب برای SVG charts
 - [x] ادامه‌ی ARIA (aria-pressed در toggleها)
 
 ## ۷.۴ Performance (§۶۲، §۷۵)
 
-- [x] بررسی N+1 و aggregation queries (RedisStore: pipeline بسته‌بندی شده — ۱۲ فرمان per day در یک pipeline؛ mget در chunk های ۵۰تایی؛ بدون N+1)
-- [x] بررسی caching / revalidation (`force-dynamic` به همه‌ی route های GET ادمین اضافه شد؛ مسیر performance دیگر range را دو بار نمی‌خواند)
+- [ ] بررسی N+1 و aggregation queries
+- [ ] بررسی caching / revalidation
 - [x] اطمینان از اینکه bundle ادمین (route group مجزا) روی سایت عمومی تأثیر نمی‌گذارد روی سایت عمومی تأثیر نمی‌گذارد (§۹۳)
 
 ---
 
 # معیار نهایی «Definition of Done» (§۸۳)
 
-- [~] چرخه: Visitor → Portfolio → Page View → Project View → Contact Form → Server Validation → Anti-Spam → Contact Stored → Analytics Updated → Email Notification → Admin Dashboard (تست‌های خودکار پاس؛ تست دستی در محیط dev/آنلاین باقی‌مانده)
-- [x] ادمین به همه‌ی ۱۳ سؤال §۸۳ جواب می‌دهد
-- [x] `lint` / `typecheck` / `build` / `test` سبز
-- [x] تست‌های امنیتی XSS پاس
-- [x] فرم با شکست analytics هیچ‌وقت درخواست واقعی را از دست نمی‌دهد (§۹۶)
-- [x] کاربر-محتوای تولیدشده نمی‌تواند اسکریپت اجرا کند (§۷۷)
-- [x] بدون لاگین دسترسی به analytics ممکن نیست (§۶۵)
+- [ ] چرخه: Visitor → Portfolio → Page View → Project View → Contact Form → Server Validation → Anti-Spam → Contact Stored → Analytics Updated → Email Notification → Admin Dashboard
+- [ ] ادمین به همه‌ی ۱۳ سؤال §۸۳ جواب می‌دهد
+- [ ] `lint` / `typecheck` / `build` / `test` سبز
+- [ ] تست‌های امنیتی XSS پاس
+- [ ] فرم با شکست analytics هیچ‌وقت درخواست واقعی را از دست نمی‌دهد (§۹۶)
+- [ ] کاربر-محتوای تولیدشده نمی‌تواند اسکریپت اجرا کند (§۷۷)
+- [ ] بدون لاگین دسترسی به analytics ممکن نیست (§۶۵)
 
 ---
 
