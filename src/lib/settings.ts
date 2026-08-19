@@ -1,14 +1,18 @@
 /**
  * Admin settings store (§24, §23).
  *
- * Persists thresholds to Redis (key `ano:settings`) when configured; falls
- * back to an in-memory map so local dev and tests behave identically without
- * a running Redis. Every consumer (rate limiter, spam score, duplicate
- * window, alert generation) reads from here so thresholds are never
+ * Persists thresholds to the PRIMARY backend, in priority order:
+ *   1. MySQL (`admin_setting` table) — when DATABASE_URL is set (production)
+ *   2. Redis (key `ano:settings`) — legacy setups without MySQL
+ *   3. In-memory map — local dev and tests
+ *
+ * Every consumer (rate limiter, spam score, duplicate window, alert
+ * generation, retention job) reads from here so thresholds are never
  * hard-coded in more than one place.
  */
 
 import { getRedis } from '@/lib/db/redis';
+import { getMySqlPool, isMySqlConfigured } from '@/lib/db/mysql';
 
 export interface AdminSettings {
   rateLimitPerIp: number;
@@ -36,9 +40,15 @@ export const DEFAULT_SETTINGS: AdminSettings = {
   retentionDays: { events: 90, sessions: 90, security: 90 },
 };
 
-const SETTINGS_KEY = 'ano:settings';
+const SETTINGS_KEY = 'settings'; // row key in admin_setting
+const REDIS_SETTINGS_KEY = 'ano:settings'; // legacy Redis key
 
 let memorySettings: AdminSettings | null = null;
+
+/** MySQL is the settings backend when it is the primary store (never in tests). */
+function mysqlEnabled(): boolean {
+  return process.env.NODE_ENV !== 'test' && isMySqlConfigured();
+}
 
 function clampInt(v: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Math.round(v)));
@@ -63,14 +73,49 @@ function normalize(input: Partial<AdminSettings> | null | undefined): AdminSetti
   return base;
 }
 
-/** Read current settings; merges over defaults so partial Redis values work. */
+/** mysql2 returns JSON columns parsed (or a JSON string on some drivers). */
+function parseStored(v: unknown): Partial<AdminSettings> | null {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'string') {
+    try {
+      return JSON.parse(v) as Partial<AdminSettings>;
+    } catch {
+      return null;
+    }
+  }
+  return v as Partial<AdminSettings>;
+}
+
+async function getFromMySql(): Promise<AdminSettings | null> {
+  try {
+    const [rows] = await getMySqlPool().execute(
+      'SELECT v FROM `admin_setting` WHERE k = ? LIMIT 1',
+      [SETTINGS_KEY]
+    );
+    const first = (rows as Array<{ v?: unknown }>)[0];
+    const parsed = parseStored(first?.v);
+    if (parsed) return normalize(parsed);
+    return null;
+  } catch {
+    // table may not exist yet (migrations not applied) — behave as unset
+    return null;
+  }
+}
+
+/** Read current settings; merges over defaults so partial stored values work. */
 export async function getSettings(): Promise<AdminSettings> {
+  if (mysqlEnabled()) {
+    const stored = await getFromMySql();
+    if (stored) return stored;
+    return { ...DEFAULT_SETTINGS };
+  }
+
   const redis = getRedis();
   if (!redis) {
     return memorySettings ?? { ...DEFAULT_SETTINGS };
   }
   try {
-    const raw = await redis.get<string>(SETTINGS_KEY);
+    const raw = await redis.get<string>(REDIS_SETTINGS_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
     return normalize(JSON.parse(raw) as Partial<AdminSettings>);
   } catch {
@@ -81,13 +126,23 @@ export async function getSettings(): Promise<AdminSettings> {
 /** Persist settings (validated/clamped) and return the stored value. */
 export async function saveSettings(input: Partial<AdminSettings>): Promise<AdminSettings> {
   const next = normalize({ ...(await getSettings()), ...input });
+
+  if (mysqlEnabled()) {
+    const json = JSON.stringify(next);
+    await getMySqlPool().execute(
+      'INSERT INTO `admin_setting` (k, v) VALUES (?, ?) ON DUPLICATE KEY UPDATE v = ?',
+      [SETTINGS_KEY, json, json]
+    );
+    return next;
+  }
+
   const redis = getRedis();
   if (!redis) {
     memorySettings = next;
     return next;
   }
   try {
-    await redis.set(SETTINGS_KEY, JSON.stringify(next), { ex: 400 * 86_400 });
+    await redis.set(REDIS_SETTINGS_KEY, JSON.stringify(next), { ex: 400 * 86_400 });
   } catch {
     memorySettings = next;
   }

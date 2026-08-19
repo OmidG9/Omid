@@ -4,12 +4,19 @@ import { POST } from '@/app/api/contact/route';
 import { getStore, resetStoreForTests } from '@/lib/db';
 import { resetRateLimiterForTests } from '@/lib/rateLimiter';
 import { logSecurityEvent } from '@/lib/services/securityService';
-import { memoryStore } from '@/lib/db';
+import { getPerformance } from '@/lib/services/analyticsService';
+import { dateKey, DAY_MS, startOfDayUtc } from '@/lib/utils/date';
 
 vi.mock('@/lib/email', async (importOriginal) => {
   const mod = await importOriginal<typeof import('@/lib/email')>();
   return { ...mod, sendContactEmail: vi.fn().mockResolvedValue(undefined) };
 });
+
+function todayRange() {
+  const to = startOfDayUtc(Date.now()) + DAY_MS - 1;
+  const from = startOfDayUtc(Date.now());
+  return { fromKey: dateKey(from), toKey: dateKey(to) };
+}
 
 function makeRequest(body: unknown, headers: Record<string, string> = {}): NextRequest {
   return new NextRequest('http://localhost/api/contact', {
@@ -128,5 +135,50 @@ describe('POST /api/contact', () => {
     expect(list.total).toBe(2);
     const first = await getStore().getContact(list.items[0].id);
     expect(first).not.toBeNull();
+  });
+
+  it('records a SPAM_BLOCKED form error for honeypot submissions (§5.3)', async () => {
+    const res = await POST(makeRequest({ ...VALID, company: 'trap' }));
+    expect(res.status).toBe(200);
+
+    const perf = await getPerformance(todayRange());
+    expect(perf.errorTypes).toContainEqual({ key: 'SPAM_BLOCKED', value: 1 });
+    expect(perf.formErrors).toBe(1);
+  });
+
+  it('records a SPAM_BLOCKED form error for spam-scored submissions (§5.3)', async () => {
+    // All-caps + link + emoji + spam keywords ⇒ score ≥ 60 threshold.
+    const spammy = {
+      ...VALID,
+      email: 'bot@spam.example.com',
+      message: 'BUY BITCOIN NOW HTTPS://SPAM.EXAMPLE.COM FREE MONEY 😀😀😀 MAKE MONEY FAST ONLINE CASINO OFFER',
+    };
+    const res = await POST(makeRequest(spammy));
+    expect(res.status).toBe(200);
+
+    const perf = await getPerformance(todayRange());
+    expect(perf.errorTypes).toContainEqual({ key: 'SPAM_BLOCKED', value: 1 });
+
+    const list = await getStore().listContacts({ page: 1, pageSize: 25 });
+    expect(list.items[0].processing).toBe('SPAM');
+  });
+
+  it('records an EMAIL_ERROR form error when SMTP delivery fails (§5.3, §43)', async () => {
+    const { sendContactEmail } = await import('@/lib/email');
+    vi.mocked(sendContactEmail).mockRejectedValueOnce(new Error('smtp down'));
+
+    const res = await POST(makeRequest(VALID));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    // Lead must survive email failure.
+    expect(json.stored).toBe(true);
+    expect(json.emailSent).toBe(false);
+
+    const perf = await getPerformance(todayRange());
+    expect(perf.errorTypes).toContainEqual({ key: 'EMAIL_ERROR', value: 1 });
+    expect(perf.formErrors).toBe(1);
+
+    const list = await getStore().listContacts({ page: 1, pageSize: 25 });
+    expect(list.total).toBe(1);
   });
 });

@@ -1,57 +1,95 @@
-﻿# Portfolio — Omid Ghanbari
+# Portfolio + Personal Intelligence Dashboard — Omid Ghanbari
 
-Personal portfolio built with **Next.js 14 App Router**, TypeScript, TailwindCSS v4, Framer Motion, and GSAP.
+Portfolio site + private admin dashboard for **ghanbariomid.ir**, built with
+**Next.js 14 (App Router)**, TypeScript (strict), TailwindCSS v4, Framer Motion,
+GSAP, MySQL (primary storage), Upstash Redis (optional legacy/rate-limiting).
 
 ---
 
 ## Getting Started
 
-**Requirements:** Node.js 18+, npm 9+
+**Requirements:** Node.js 22+, npm 10+
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
-npm run build && npm start   # production
+cp .env.local.example .env.local   # then fill in real values
+npm run dev                        # http://localhost:3000
+```
+
+Production:
+
+```bash
+npm run build
+npm start
 ```
 
 ---
 
-## Project Structure
+## Environment Variables
 
+All variables are documented in `.env.local.example`. The important ones:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `ADMIN_SECRET` | yes (prod) | HMAC key that signs admin session cookies |
+| `ADMIN_PASSWORD` | yes (prod) | Admin dashboard password |
+| `SITE_URL` | no | Canonical domain for SEO metadata/sitemap (default `https://ghanbariomid.ir`) |
+| `DATABASE_URL` | no* | MySQL connection (primary storage when set) |
+| `SMTP_HOST/PORT/USER/PASS` | for email | Contact-form email delivery |
+| `UPSTASH_REDIS_REST_URL/TOKEN` | no | Legacy Redis backend / rate limiting |
+| `ALLOW_DEV_AUTH=1` | dev only | Explicit opt-in for the local dev admin credentials |
+| `TRUST_PROXY=1` | behind nginx | Trust `x-forwarded-for` for client IPs |
+
+\* Without `DATABASE_URL` the app falls back to Redis, then in-memory — the
+public site never breaks on a misconfigured database.
+
+> **Security:** there is no silent `admin/admin` fallback. In production,
+> `ADMIN_SECRET`/`ADMIN_PASSWORD` must be real values; the well-known dev
+> secret is rejected. In development, auth is disabled unless you explicitly
+> set `ALLOW_DEV_AUTH=1`.
+
+---
+
+## Admin Dashboard
+
+The `/admin` area (login at `/admin/login`) gives you:
+
+- **Overview** — visitors, sessions, page/project views, form funnel, alerts
+- **Analytics** — visitors / pages / traffic sources / devices / projects / performance
+- **Contacts** — leads, status workflow (NEW → READ → REPLIED / ARCHIVED / SPAM), CSV export
+- **Security** — spam, rate-limit, invalid-payload and auth-failure events
+- **Settings** — rate limits, spam threshold, duplicate window, retention days
+
+All `/admin/*` pages and `/api/admin/*` routes are protected by an HMAC-signed
+session cookie verified in `middleware.ts` (defense in depth).
+
+---
+
+## Storage
+
+MySQL is the primary backend (`DATABASE_URL`). Apply migrations with:
+
+```bash
+npm run db:migrate
 ```
-src/
- app/
-    layout.tsx            # Root layout (font, metadata, intro overlay)
-    page.tsx              # Homepage
-    globals.css           # Tailwind theme tokens + global styles
-    api/contact/          # POST /api/contact  email + rate limiter
-    projects/[slug]/      # Dynamic project detail page
- components/
-    IntroOverlay.tsx      # First-visit fullscreen intro
-    layout/               # Navbar, Footer
-    sections/             # Hero, About, Skills, Experience, Projects, Contact
-    projects/             # ProjectCard, Gallery
-    contact/              # ContactForm
-    icons/                # TechIcons + TECH_MAP
-    ui/                   # Section, Container, SectionHeader
- data/
-    portfolio.ts          # all site content lives here
- lib/
-     categoryColors.ts
-     contactSchema.ts
-     email.ts
-     rateLimiter.ts        # Upstash Redis sliding-window (falls back to memory)
+
+Prune old analytics/session/security rows according to the retention settings:
+
+```bash
+npm run db:retention          # actually deletes
+DRY_RUN=1 npm run db:retention  # preview only
 ```
+
+Contacts are business data and are never pruned automatically.
 
 ---
 
 ## Editing Content
 
-All text, projects, skills, experience, and social links are in **`src/data/portfolio.ts`** no other files need to change.
+All text, projects, skills, experience, and social links live in
+**`src/data/portfolio.ts`** — no other files need to change to update the site.
 
----
-
-## Adding a Project
+### Adding a Project
 
 1. Add an entry to the `projects` array in `portfolio.ts`:
 
@@ -68,52 +106,43 @@ All text, projects, skills, experience, and social links are in **`src/data/port
   images: [{ src: '/projects/my-project/cover.jpg', alt: '...' }],
   liveUrl: 'https://...',            // optional
   githubUrl: 'https://github.com/...', // optional
-  demoUrl: 'https://...',            // optional  enables demo button
-  demoType: 'link',                  // 'link' | 'embed' (iframe)
+  demoUrl: 'https://...',            // optional — enables demo button
+  demoType: 'link',                  // 'link' | 'embed' (sandboxed iframe)
   features: ['...'],
 }
 ```
 
-2. Place images in `public/projects/my-project/` (recommended cover: 1200x630 px).
+2. Place images in `public/projects/my-project/` (recommended cover: 1200×630 px).
 
 ---
 
-## Adding a Tech Icon
+## Quality Gates
 
-1. Create an SVG component in `src/components/icons/TechIcons.tsx`:
-
-```typescript
-export const MyTechIcon = ({ className, style }: IconProps) => (
-  <svg className={className} style={style} viewBox="0 0 24 24">...</svg>
-);
+```bash
+npm run lint        # ESLint
+npm run typecheck   # tsc --noEmit
+npm test            # vitest (unit + route + integration-skip)
+npm run check       # all three
 ```
 
-2. Register in `TECH_MAP`:
+The MySQL integration tests (`src/lib/db/mySqlStore.integration.test.ts`) run
+only when `TEST_MYSQL_URL` is set:
 
-```typescript
-"My Tech": { name: "My Tech", Icon: MyTechIcon, color: "#HEX" },
+```bash
+TEST_MYSQL_URL="mysql://root@127.0.0.1:3306/omid_portfolio" npm test
 ```
-
----
-
-## Category Colors
-
-Centralized in `src/lib/categoryColors.ts`.
-
-| Category   | Color           |
-| ---------- | --------------- |
-| Full-Stack | Blue            |
-| Frontend   | Cyan / Sky      |
-| UI/UX      | Violet / Purple |
-| WordPress  | Indigo          |
 
 ---
 
 ## Deploy
 
-1. Push to GitHub
-2. Import at [vercel.com](https://vercel.com) Next.js is auto-detected
-3. Add environment variables in Vercel project settings
+1. Push to GitHub (CI runs lint + typecheck + tests automatically).
+2. Import at [vercel.com](https://vercel.com) — Next.js is auto-detected.
+3. Set the environment variables from `.env.local.example` in Vercel project
+   settings (especially `ADMIN_SECRET`, `ADMIN_PASSWORD`, `DATABASE_URL`,
+   `SITE_URL`, `SMTP_*`).
+4. Apply migrations once: `npm run db:migrate`, then schedule
+   `npm run db:retention` (e.g. a nightly cron).
 
 ---
 
@@ -126,7 +155,3 @@ Centralized in `src/lib/categoryColors.ts`.
 | Accent     | #3b82f6 blue-500  | Buttons, highlights |
 | Text       | #f1f5f9 slate-100 | Headings            |
 | Muted      | #94a3b8 slate-400 | Body text           |
-
----
-
-Built with Next.js 14 · TypeScript · TailwindCSS · Framer Motion · GSAP

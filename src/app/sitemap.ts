@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 import portfolio from '@/data/portfolio';
+import { getSiteUrl } from '@/lib/site';
 
-const BASE_URL = 'https://omidghanbari.dev';
+const BASE_URL = getSiteUrl();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const projectRoutes: MetadataRoute.Sitemap = portfolio.projects.map(

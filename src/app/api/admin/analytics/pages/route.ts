@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const range = parseRange(sp.get('mode'), sp.get('from'), sp.get('to'));
