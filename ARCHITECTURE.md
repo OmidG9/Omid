@@ -19,7 +19,7 @@ Status: MVP implementation baseline. Written after a full repository audit (Phas
 | Topic | Decision | Rationale |
 |---|---|---|
 | Persistence | Upstash Redis + in-memory fallback | `@upstash/redis` already a dependency (rate limiter); serverless-native; TTL retention built-in; no new vendor. |
-| Auth | Lightweight HMAC session cookie (`ADMIN_SECRET`), rate-limited login | Zero new dependencies; server-side verified in `middleware.ts`; single ADMIN role, role-aware structures. |
+| Auth | DB-backed credentials (`admin_user` table) + HMAC session cookie (`ADMIN_SECRET`), rate-limited + lockout login | Passwords stored as salted scrypt hashes, never in env vars; server-side verified in `middleware.ts`; single ADMIN role, role-aware structures. |
 | Charts | Hand-rolled inline SVG components | Avoids recharts dependency; bundle stays small; charts are simple (line/bar/donut). |
 | Aggregation | Daily metrics (`DailyMetric`) updated per event + raw events with TTL | Keeps dashboard queries bounded; re-runnable; retention per master prompt. |
 
@@ -104,10 +104,13 @@ Public site (client SDK, fire-and-forget, beacon)
 
 ```text
 ADMIN_SECRET                  # required for /admin auth (HMAC session key)
-ADMIN_PASSWORD                # optional; login compares HMAC rather than raw storage
-CONTACT_TO                    # optional override (falls back to SMTP_USER)
-SMTP_* / UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN   # existing
+DATABASE_URL                  # required for admin login (admin_user table)
 ```
+
+Admin credentials live in the `admin_user` table (migration `0004_admin_user.sql`)
+with salted scrypt password hashes. Bootstrap the first admin with
+`npm run admin:create`; the script generates a random username and strong
+password so the login id is not guessable.
 
 ## 10. Phases
 
