@@ -111,8 +111,9 @@ export function scoreSpam(input: {
 }
 
 /** SHA-256 duplicate key within the configured window (§50). */
-function duplicateHash(email: string): string {
-  return `sha256:${createHash('sha256').update(email.trim().toLowerCase()).digest('hex')}`;
+function duplicateHash(email: string, message: string, ip?: string): string {
+  const payload = `${email.trim().toLowerCase()}|${message.trim()}|${ip ?? ''}`;
+  return `sha256:${createHash('sha256').update(payload).digest('hex')}`;
 }
 
 export async function persistContact(input: PersistContactInput): Promise<PersistContactResult> {
@@ -128,7 +129,7 @@ export async function persistContact(input: PersistContactInput): Promise<Persis
   const spam = scoreSpam({ ...input, formTimeMs });
   const spamThreshold = input.spamThreshold ?? 60;
 
-  const dupHash = duplicateHash(input.email);
+  const dupHash = duplicateHash(input.email, input.message, input.ip);
   const id = crypto.randomUUID();
   const dupOwner = await store.claimDuplicate(
     dupHash,

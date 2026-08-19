@@ -63,20 +63,16 @@ describe('configurable spam threshold (§47)', () => {
 
 describe('duplicate detection (§50)', () => {
   it('stores the prior contact id in duplicateOf and never the raw hex prefix', async () => {
-    const first = await persistContact({
+    const body = {
       name: 'Dupe',
       email: 'dupe@example.com',
       subject: 'Website contact form',
-      message: 'First message that is long enough to store.',
+      message: 'The exact same message, long enough to store.',
       userAgent: UA,
-    });
-    const second = await persistContact({
-      name: 'Dupe',
-      email: 'dupe@example.com',
-      subject: 'Website contact form',
-      message: 'Second message that is also long enough to store.',
-      userAgent: UA,
-    });
+      ip: '203.0.113.9',
+    };
+    const first = await persistContact(body);
+    const second = await persistContact(body);
     expect(second.isDuplicate).toBe(true);
     expect(second.duplicateOf).toBe(first.contact.id);
 

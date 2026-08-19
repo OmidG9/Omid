@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Rate limit (Redis when env vars present, in-memory fallback otherwise)
-  if (await isRateLimited(ip)) {
+  if (await isRateLimited(ip, 'contact')) {
     await logSecurityEvent({
       type: SECURITY_EVENT.RATE_LIMIT_TRIGGERED,
       ip,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     });
     // Recorded as analytics only (server-side); the bot still sees a silent 200.
     await trackFormError('SPAM_BLOCKED', body);
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return NextResponse.json({ ok: true, stored: false }, { status: 200 });
   }
 
   // Zod validation
@@ -194,8 +194,11 @@ export async function POST(request: NextRequest) {
     // Timeline: record the send outcome on the stored lead.
     await appendTimeline(contact.id, emailOk);
 
+    // `spam` lets the client avoid counting blocked leads as funnel success
+    // (they are already recorded as SPAM_BLOCKED form errors server-side).
+    const isSpam = isDuplicate || contact.spamScore >= settings.spamScoreThreshold;
     return NextResponse.json(
-      { ok: true, stored: true, emailSent: emailOk },
+      { ok: true, stored: true, spam: isSpam, emailSent: emailOk },
       { status: 200 }
     );
   } catch (error) {

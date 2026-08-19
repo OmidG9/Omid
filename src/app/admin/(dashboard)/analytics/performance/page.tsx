@@ -2,10 +2,12 @@ import { PageHeader, Card } from '@/components/admin/Card';
 import { EmptyState } from '@/components/admin/StateViews';
 import { HealthBadge } from '@/components/admin/StatusBadge';
 import BarList from '@/components/admin/BarList';
+import FunnelChart from '@/components/admin/FunnelChart';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
 import { getPerformance, getHealth } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
 import { formatNumber, formatDateKey } from '@/lib/utils/fa';
+import { CHART_COLORS } from '@/lib/utils/chartTheme';
 
 export default async function AnalyticsPerformancePage({
   searchParams,
@@ -45,10 +47,15 @@ export default async function AnalyticsPerformancePage({
             subtitle="مشاهده فرم تماس ← شروع ← ارسال موفق"
             action={<HealthBadge status={healthState} />}
           >
-            <FunnelBar label="مشاهده‌های فرم" value={performance.formViews} max={performance.formViews} />
-            <FunnelBar label="شروع‌های فرم" value={performance.formStarts} max={performance.formViews} />
-            <FunnelBar label="ارسال‌های موفق" value={performance.formSuccess} max={performance.formViews} />
-            <FunnelBar label="خطاها" value={performance.formErrors} max={performance.formViews} />
+                        <FunnelChart
+              steps={[
+                { label: 'مشاهده‌های فرم', value: performance.formViews, color: CHART_COLORS.blue },
+                { label: 'شروع‌های فرم', value: performance.formStarts, color: CHART_COLORS.cyan },
+                { label: 'ارسال‌های موفق', value: performance.formSuccess, color: CHART_COLORS.emerald },
+                { label: 'خطاها', value: performance.formErrors, color: CHART_COLORS.red },
+              ]}
+              emptyLabel="هنوز فعالیتی در فرم ثبت نشده"
+            />
           </Card>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -73,21 +80,6 @@ export default async function AnalyticsPerformancePage({
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function FunnelBar({ label, value, max }: { label: string; value: number; max: number }) {
-  const pct = max > 0 ? (value / max) * 100 : 0;
-  return (
-    <div className="mb-3 last:mb-0">
-      <div className="flex items-center justify-between text-xs mb-1">
-        <span className="text-slate-400">{label}</span>
-        <span className="text-slate-200 font-medium tabular-nums">{formatNumber(value)}</span>
-      </div>
-      <div className="h-2 rounded-full bg-slate-800/70 overflow-hidden">
-        <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" style={{ width: `${Math.max(pct, value > 0 ? 2 : 0)}%` }} />
-      </div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import type { AnalyticsEventName, ViewerContext } from '@/types/analytics';
 
 const VISITOR_COOKIE = 'ano_vid';
 const SESSION_COOKIE = 'ano_sid';
+const SESSION_TOUCH_COOKIE = 'ano_st';
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30-minute inactivity timeout
 const QUEUE_KEY = 'ano_queue';
 const QUEUE_LIMIT = 32;
@@ -58,13 +59,22 @@ let initialized = false;
 
 function ensureSession(): string {
   const now = Date.now();
-  if (cachedSession && now - sessionTouchedAt < SESSION_TTL_MS) return cachedSession;
   const existing = getCookie(SESSION_COOKIE);
-  cachedSession = existing ?? uuid();
+  // `ano_st` mirrors the last activity so a 30-minute gap rolls a new session
+  // even though the 90-day cookie id would otherwise look "recent" (§session).
+  const lastTouched = Number(getCookie(SESSION_TOUCH_COOKIE) ?? '') || 0;
+  const cookieFresh = !!existing && lastTouched > 0 && now - lastTouched < SESSION_TTL_MS;
+  const memoryFresh = now - sessionTouchedAt < SESSION_TTL_MS;
+
+  if (cachedSession && memoryFresh && cookieFresh) return cachedSession;
+
+  const startNew = !existing || lastTouched === 0 || now - lastTouched >= SESSION_TTL_MS;
+  cachedSession = existing && !startNew ? existing : uuid();
   sessionTouchedAt = now;
   setCookie(SESSION_COOKIE, cachedSession, 60 * 60 * 24 * 90);
+  setCookie(SESSION_TOUCH_COOKIE, String(now), 60 * 60 * 24 * 90);
   // §10: record SESSION_START whenever a fresh session id is minted.
-  if (!existing) {
+  if (startNew) {
     trackBase('SESSION_START', {}, {});
   }
   return cachedSession;

@@ -47,6 +47,13 @@ export interface TrackInput {
   clientIp?: string;
 }
 
+/** Unique-in-range counts (METRICS.md: visitors/sessions by id in the period). */
+export interface RangeCounts {
+  visitors: number;
+  newVisitors: number;
+  sessions: number;
+}
+
 /**
  * Low-level storage contract. High-level orchestration lives in track.ts and
  * the service layer; backends only implement persistence primitives.
@@ -67,6 +74,11 @@ export interface DataStore {
   getVisitor(vid: string): Promise<VisitorRecord | null>;
   getSession(sid: string): Promise<SessionRecord | null>;
   getDailyMetrics(keys: string[]): Promise<Array<DailyMetric | undefined>>;
+  /**
+   * Distinct visitors / sessions whose activity falls in the day-key range.
+   * `newVisitors` counts visitors whose first-ever event lands in the range.
+   */
+  getRangeCounts(fromKey: string, toKey: string): Promise<RangeCounts>;
   getActiveMetricDates(fromKey: string, toKey: string): Promise<string[]>;
   listSessions(from: number, to: number, limit: number): Promise<SessionRecord[]>;
   /** Timestamp of the most recently received analytics event (or 0). */
@@ -328,6 +340,22 @@ export class MemoryStore implements DataStore {
       if (k >= fromKey && k <= toKey) list.push(k);
     }
     return list.sort();
+  }
+
+  async getRangeCounts(fromKey: string, toKey: string): Promise<RangeCounts> {
+    const visitors = new Set<string>();
+    const newVisitors = new Set<string>();
+    const sessions = new Set<string>();
+    for (const [day, set] of this.shape.dayVisitors) {
+      if (day >= fromKey && day <= toKey) for (const v of set) visitors.add(v);
+    }
+    for (const [day, set] of this.shape.dayNew) {
+      if (day >= fromKey && day <= toKey) for (const v of set) newVisitors.add(v);
+    }
+    for (const [day, set] of this.shape.daySessions) {
+      if (day >= fromKey && day <= toKey) for (const s of set) sessions.add(s);
+    }
+    return { visitors: visitors.size, newVisitors: newVisitors.size, sessions: sessions.size };
   }
 
   async listSessions(from: number, to: number, limit: number): Promise<SessionRecord[]> {

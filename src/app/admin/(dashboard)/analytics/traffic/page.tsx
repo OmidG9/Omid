@@ -6,15 +6,7 @@ import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePic
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
 import { formatNumber, formatDateKey, SOURCE_LABELS } from '@/lib/utils/fa';
-
-const SOURCE_COLORS: Record<string, string> = {
-  direct: '#3b82f6',
-  search: '#22d3ee',
-  social: '#a78bfa',
-  referral: '#f59e0b',
-  campaign: '#34d399',
-  other: '#64748b',
-};
+import { SOURCE_COLORS } from '@/lib/utils/chartTheme';
 
 export default async function AnalyticsTrafficPage({
   searchParams,

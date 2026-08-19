@@ -72,7 +72,13 @@ export default function ContactForm() {
       if (json.ok) {
         setSuccess(true);
         reset();
-        analytics.formSuccess({ formTimeMs: elapsed() ?? undefined });
+        // Only genuinely stored, non-spam submissions count as funnel success.
+        // Honeypot/spam/duplicate responses keep ok:true (never reveal the trap
+        // to bots) but are already recorded as SPAM_BLOCKED form errors
+        // server-side, so they must not also bump formSuccess.
+        if (json.stored && !json.spam) {
+          analytics.formSuccess({ formTimeMs: elapsed() ?? undefined });
+        }
       } else {
         // Typed errors (VALIDATION_ERROR, RATE_LIMITED, SERVER_ERROR) are
         // recorded server-side by the contact route (§5.3); no double count.

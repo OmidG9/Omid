@@ -10,6 +10,7 @@ import type {
   DataStore,
   ListContactsOptions,
   Paginated,
+  RangeCounts,
   SecurityListOptions,
   TrackInput,
 } from './store';
@@ -18,7 +19,7 @@ import type { ContactRequest, ContactStatus, ContactProcessing } from '@/types/c
 import type { SecurityEvent, SecurityEventType } from '@/types/security';
 import { emptyDailyMetric } from './daily';
 import { metricIncrementsForEvent } from './daily';
-import { dateKey } from '@/lib/utils/date';
+import { dateKey, rangeKeys } from '@/lib/utils/date';
 import {
   detectDevice,
   detectBrowser,
@@ -313,6 +314,26 @@ export class RedisStore implements DataStore {
   async getActiveMetricDates(fromKey: string, toKey: string): Promise<string[]> {
     const members = await this.r.smembers(K.dmIndex());
     return members.filter((m) => m >= fromKey && m <= toKey).sort();
+  }
+
+  async getRangeCounts(fromKey: string, toKey: string): Promise<RangeCounts> {
+    const days = rangeKeys(fromKey, toKey);
+    if (days.length === 0) return { visitors: 0, newVisitors: 0, sessions: 0 };
+    const unionMembers = async (keys: string[]): Promise<Set<string>> => {
+      if (keys.length === 0) return new Set();
+      const members = await this.r.sunion(keys[0], ...keys.slice(1));
+      return new Set(members as string[]);
+    };
+    const [visitors, newVisitors, sessions] = await Promise.all([
+      unionMembers(days.map((d) => K.dmVisitors(d))),
+      unionMembers(days.map((d) => K.dmNew(d))),
+      unionMembers(days.map((d) => K.dmSessions(d))),
+    ]);
+    return {
+      visitors: visitors.size,
+      newVisitors: newVisitors.size,
+      sessions: sessions.size,
+    };
   }
 
   async listSessions(from: number, to: number, limit: number): Promise<SessionRecord[]> {

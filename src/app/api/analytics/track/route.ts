@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Lightly rate-limit tracking to absorb flood/abuse without hurting beacons.
-  if (await isRateLimited(ip)) {
+  if (await isRateLimited(ip, 'track')) {
     await logSecurityEvent({
       type: SECURITY_EVENT.RATE_LIMIT_TRIGGERED,
       ip,

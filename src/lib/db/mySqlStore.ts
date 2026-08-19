@@ -22,6 +22,7 @@ import type {
   DataStore,
   ListContactsOptions,
   Paginated,
+  RangeCounts,
   SecurityListOptions,
   TrackInput,
 } from './store';
@@ -526,6 +527,29 @@ export class MySqlStore implements DataStore {
       m.spam = cday?.spam ?? 0;
       return m;
     });
+  }
+
+  async getRangeCounts(fromKey: string, toKey: string): Promise<RangeCounts> {
+    const pool = getMySqlPool();
+    const [from, to] = dayBoundary(fromKey, toKey);
+    const [visitorRows] = await pool.execute<Row[]>(
+      `SELECT COUNT(DISTINCT visitor_id) c FROM \`analytics_event\`
+       WHERE visitor_id IS NOT NULL AND occurred_at >= ? AND occurred_at < ?`,
+      [dt(from), dt(to)]
+    );
+    const [newRows] = await pool.execute<Row[]>(
+      `SELECT COUNT(*) c FROM \`visitor\` WHERE first_seen_at >= ? AND first_seen_at < ?`,
+      [dt(from), dt(to)]
+    );
+    const [sessionRows] = await pool.execute<Row[]>(
+      `SELECT COUNT(*) c FROM \`session\` WHERE started_at >= ? AND started_at < ?`,
+      [dt(from), dt(to)]
+    );
+    return {
+      visitors: num(visitorRows[0]?.c),
+      newVisitors: num(newRows[0]?.c),
+      sessions: num(sessionRows[0]?.c),
+    };
   }
 
   async getActiveMetricDates(fromKey: string, toKey: string): Promise<string[]> {

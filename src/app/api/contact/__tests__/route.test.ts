@@ -39,6 +39,7 @@ describe('POST /api/contact', () => {
     const json = await res.json();
     expect(json.ok).toBe(true);
     expect(json.stored).toBe(true);
+    expect(json.spam).toBe(false);
 
     const list = await getStore().listContacts({ page: 1, pageSize: 25 });
     expect(list.total).toBe(1);
@@ -83,7 +84,10 @@ describe('POST /api/contact', () => {
   it('does not store a request when the honeypot is filled in', async () => {
     const res = await POST(makeRequest({ ...VALID, company: 'spam-value' }));
     expect(res.status).toBe(200);
+    const json = await res.json();
     // The response must not look like a real request to the bot.
+    expect(json.ok).toBe(true);
+    expect(json.stored).toBe(false);
     expect((await getStore().listContacts({ page: 1, pageSize: 25 })).total).toBe(0);
   });
 
@@ -101,14 +105,18 @@ describe('POST /api/contact', () => {
   it('flags spam submissions with a spam score over the threshold', async () => {
     const spammy = {
       ...VALID,
-      message: 'BUY BITCOIN NOW https://spam.example.com FREE MONEY 💰💰💰 make money fast online casino offer',
+      message: 'BUY BITCOIN NOW HTTPS://SPAM.EXAMPLE.COM FREE MONEY 💰💰💰 CASINO OFFER WINNER CLAIM NOW',
       email: 'bot@spam.example.com',
     };
-    const res = await POST(makeRequest(spammy));
+    const res = await POST(makeRequest(spammy, { 'user-agent': 'python-requests/2.31' }));
     expect(res.status).toBe(200);
+    const json = await res.json();
+    // The lead is stored but marked as spam so the client skips funnel success.
+    expect(json.stored).toBe(true);
+    expect(json.spam).toBe(true);
 
     const list = await getStore().listContacts({ page: 1, pageSize: 25 });
-    expect(list.items[0].spamScore).toBeGreaterThanOrEqual(30);
+    expect(list.items[0].spamScore).toBeGreaterThanOrEqual(60);
     expect(list.items[0].spamFlags.length).toBeGreaterThan(0);
   });
 

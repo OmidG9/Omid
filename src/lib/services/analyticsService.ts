@@ -166,24 +166,26 @@ export async function getOverview(range: {
 
   // Previous equivalent-length period ends just before the current start.
   const prevToMs = from - 1;
-  const prevToDay = startOfDayUtc(prevToMs - DAY_MS);
+  const prevToDay = startOfDayUtc(prevToMs);
   const prevFromDay = prevToDay - (days - 1) * DAY_MS;
   const prevFromKey = dateKey(prevFromDay);
   const prevToKey = dateKey(prevToMs);
 
-  const [cur, prev] = await Promise.all([
+  const [cur, prev, curRange, prevRange] = await Promise.all([
     loadRange(fromKey, toKey),
     loadRange(prevFromKey, prevToKey),
+    store.getRangeCounts(fromKey, toKey),
+    store.getRangeCounts(prevFromKey, prevToKey),
   ]);
   const c = sumDaily(cur);
   const p = sumDaily(prev);
 
   const compare = (current: number, previous: number) => calculatePercentageChange(current, previous);
   const metrics = {
-    visitors: c.visitors,
-    newVisitors: c.newVisitors,
-    returningVisitors: c.returningVisitors,
-    sessions: c.sessions,
+    visitors: curRange.visitors,
+    newVisitors: curRange.newVisitors,
+    returningVisitors: Math.max(0, curRange.visitors - curRange.newVisitors),
+    sessions: curRange.sessions,
     pageViews: c.pageViews,
     projectViews: c.projectViews,
     outboundClicks: c.outboundClicks,
@@ -200,6 +202,11 @@ export async function getOverview(range: {
     submissionRate: safeRate(c.formSuccess, c.formStarts),
     abandonmentRate: safeRate(Math.max(0, c.formStarts - c.formSuccess), c.formStarts),
   };
+
+  const curV = curRange.visitors;
+  const prevV = prevRange.visitors;
+  const curS = curRange.sessions;
+  const prevS = prevRange.sessions;
 
   const series: TrafficSeriesPoint[] = rangeKeys(fromKey, toKey).map((k) => {
     const m = cur.find((x) => x.date === k);
@@ -224,8 +231,8 @@ export async function getOverview(range: {
       }» ثبت شد — کانال اصلی این بازه.`
     );
   }
-  if (c.returningVisitors > 0) {
-    const ratio = Math.round((c.returningVisitors / Math.max(1, c.visitors)) * 100);
+  if (metrics.returningVisitors > 0) {
+    const ratio = Math.round((metrics.returningVisitors / Math.max(1, metrics.visitors)) * 100);
     insights.push(`${formatNumber(ratio)}٪ از بازدیدکنندگان در این بازه بازگشتی بوده‌اند.`);
   }
   if (c.projectViews > 0 && c.pageViews > 0) {
@@ -233,11 +240,11 @@ export async function getOverview(range: {
   }
 
   // Growth insight (§22): compare visitor volume against the previous period.
-  if (c.visitors > 0) {
-    if (p.visitors === 0) {
+  if (curV > 0) {
+    if (prevV === 0) {
       insights.push('ترافیک این بازه از صفر شروع شده است — دورهٔ قبلی هیچ داده‌ای نداشت.');
     } else {
-      const delta = ((c.visitors - p.visitors) / p.visitors) * 100;
+      const delta = ((curV - prevV) / prevV) * 100;
       if (Math.abs(delta) >= 5) {
         insights.push(
           `بازدیدکنندگان نسبت به دورهٔ قبل ${delta > 0 ? '' : 'کاهش '}${formatNumber(Math.abs(delta))}٪ ${
@@ -257,8 +264,8 @@ export async function getOverview(range: {
 
   // Device share (§22): dominant device type if it exceeds half of activity.
   const topDevice = topDevices[0];
-  if (topDevice && c.visitors > 0) {
-    const share = Math.round((topDevice.value / Math.max(1, c.visitors)) * 100);
+  if (topDevice && metrics.visitors > 0) {
+    const share = Math.round((topDevice.value / Math.max(1, metrics.visitors)) * 100);
     if (share >= 50) {
       insights.push(
         `${formatNumber(share)}٪ از فعالیت بر روی «${
@@ -289,10 +296,10 @@ export async function getOverview(range: {
   if (metrics.abandonmentRate >= 60 && metrics.formStarts > 0) {
     alerts.push(`نرخ رهاسازی فرم ${formatNumber(Math.round(metrics.abandonmentRate))}٪ است.`);
   }
-  if (c.visitors > 0 && p.visitors > 0 && c.visitors < p.visitors * (1 - alert.trafficDropPct / 100)) {
+  if (curV > 0 && prevV > 0 && curV < prevV * (1 - alert.trafficDropPct / 100)) {
     alerts.push(`ترافیک نسبت به دورهٔ قبل بیش از ${formatNumber(Math.round(alert.trafficDropPct))}٪ کاهش یافته است.`);
   }
-  if (p.visitors > 1 && c.visitors === 0) {
+  if (prevV > 1 && curV === 0) {
     alerts.push('در این بازه هیچ بازدیدکننده‌ای ثبت نشده است.');
   }
 
@@ -302,9 +309,9 @@ export async function getOverview(range: {
     days,
     metrics,
     compare: {
-      visitors: compare(c.visitors, p.visitors),
+      visitors: compare(curV, prevV),
       pageViews: compare(c.pageViews, p.pageViews),
-      sessions: compare(c.sessions, p.sessions),
+      sessions: compare(curS, prevS),
       contacts: compare(c.contacts, p.contacts),
       projectViews: compare(c.projectViews, p.projectViews),
       conversionRate: compare(
@@ -313,9 +320,9 @@ export async function getOverview(range: {
       ),
     },
     previous: {
-      visitors: p.visitors,
+      visitors: prevV,
       pageViews: p.pageViews,
-      sessions: p.sessions,
+      sessions: prevS,
       contacts: p.contacts,
       projectViews: p.projectViews,
       conversionRate: safeRate(p.contacts, p.formViews),

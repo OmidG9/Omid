@@ -14,6 +14,7 @@ import MetricCard from '@/components/admin/MetricCard';
 import TrafficChart from '@/components/admin/TrafficChart';
 import BarList from '@/components/admin/BarList';
 import DonutChart from '@/components/admin/DonutChart';
+import FunnelChart from '@/components/admin/FunnelChart';
 import { EmptyState } from '@/components/admin/StateViews';
 import { HealthBadge, StatusBadge } from '@/components/admin/StatusBadge';
 import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePicker';
@@ -21,6 +22,7 @@ import { getOverview, getHealth } from '@/lib/services/analyticsService';
 import { getStore } from '@/lib/db';
 import { parseRange } from '@/lib/services/rangeParam';
 import type { ContactStatus } from '@/types/contacts';
+import { SOURCE_COLORS, DEVICE_COLORS, CHART_COLORS } from '@/lib/utils/chartTheme';
 import {
   formatNumber,
   formatPercent,
@@ -28,15 +30,6 @@ import {
   SOURCE_LABELS,
   DEVICE_LABELS,
 } from '@/lib/utils/fa';
-
-const SOURCE_COLORS: Record<string, string> = {
-  direct: '#3b82f6',
-  search: '#22d3ee',
-  social: '#a78bfa',
-  referral: '#f59e0b',
-  campaign: '#34d399',
-  other: '#64748b',
-};
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -155,7 +148,7 @@ export default async function AdminDashboardPage({
                 data={data.topDevices.map((d) => ({
                   key: DEVICE_LABELS[d.key] ?? d.key,
                   value: d.value,
-                  color: { desktop: '#3b82f6', mobile: '#22d3ee', tablet: '#a78bfa' }[d.key] ?? '#64748b',
+                  color: DEVICE_COLORS[d.key] ?? '#64748b',
                 }))}
                 centerValue={formatNumber(metrics.visitors)}
                 centerLabel="بازدیدکننده"
@@ -165,13 +158,16 @@ export default async function AdminDashboardPage({
               <BarList data={data.topReferrers} emptyTitle="هنوز ارجاع خارجی ثبت نشده" />
             </Card>
             <Card title="قیف فرم" subtitle="بازدید ← شروع ← موفقیت">
-              <ul className="space-y-2.5">
-                <FunnelRow label="بازدید از فرم" value={metrics.formViews} />
-                <FunnelRow label="شروع فرم" value={metrics.formStarts} />
-                <FunnelRow label="ارسال موفق" value={metrics.formSuccess} />
-                <FunnelRow label="خطاها" value={metrics.formErrors} />
-              </ul>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <FunnelChart
+                steps={[
+                  { label: 'بازدید از فرم', value: metrics.formViews, color: CHART_COLORS.blue },
+                  { label: 'شروع فرم', value: metrics.formStarts, color: CHART_COLORS.cyan },
+                  { label: 'ارسال موفق', value: metrics.formSuccess, color: CHART_COLORS.emerald },
+                  { label: 'خطاها', value: metrics.formErrors, color: CHART_COLORS.red },
+                ]}
+                emptyLabel="هنوز فعالیتی در فرم ثبت نشده"
+              />
+              <div className="mt-5 grid grid-cols-3 gap-2 text-center">
                 <Stat label="نرخ تبدیل" value={formatPercent(metrics.conversionRate)} />
                 <Stat label="نرخ شروع" value={formatPercent(metrics.startRate)} />
                 <Stat label="رهاسازی" value={formatPercent(metrics.abandonmentRate)} />
@@ -187,15 +183,6 @@ export default async function AdminDashboardPage({
         </div>
       )}
     </div>
-  );
-}
-
-function FunnelRow({ label, value }: { label: string; value: number }) {
-  return (
-    <li className="flex items-center justify-between text-xs">
-      <span className="text-slate-400">{label}</span>
-      <span className="text-slate-200 font-medium tabular-nums">{formatNumber(value)}</span>
-    </li>
   );
 }
 

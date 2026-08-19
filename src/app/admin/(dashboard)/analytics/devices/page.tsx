@@ -6,6 +6,7 @@ import DateRangePicker, { type RangeMode } from '@/components/admin/DateRangePic
 import { getAnalyticsSubpage } from '@/lib/services/analyticsService';
 import { parseRange } from '@/lib/services/rangeParam';
 import { formatNumber, formatDateKey } from '@/lib/utils/fa';
+import { DEVICE_COLORS } from '@/lib/utils/chartTheme';
 
 export default async function AnalyticsDevicesPage({
   searchParams,
@@ -37,7 +38,7 @@ export default async function AnalyticsDevicesPage({
               data={data.items.map((d) => ({
                 key: d.key,
                 value: d.value,
-                color: { desktop: '#3b82f6', mobile: '#22d3ee', tablet: '#a78bfa' }[d.key] ?? '#64748b',
+                color: DEVICE_COLORS[d.key] ?? '#64748b',
               }))}
               centerValue={formatNumber(data.items.reduce((a, d) => a + d.value, 0))}
               centerLabel="بازدیدکننده"

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import AnalyticsChart from '@/components/admin/AnalyticsChart';
-import { toFaDigits } from '@/lib/utils/fa';
+import { toFaDigits, formatDateKey } from '@/lib/utils/fa';
 
 interface SeriesPoint {
   date: string;
@@ -75,6 +75,8 @@ export default function TrafficChart({ series }: { series: SeriesPoint[] }) {
         values={values}
         color={active.color}
         labels={labels.map((d) => toFaDigits(formatAxisLabel(d, granularity)))}
+        tooltipLabels={labels.map((d) => formatDateKey(d))}
+        name={active.label}
       />
       {granularity === 'weekly' && (
         <p className="mt-1 text-[10px] text-slate-600">

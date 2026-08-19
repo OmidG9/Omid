@@ -56,13 +56,28 @@ describe('persistContact', () => {
     expect(contact.status).not.toBe(CONTACT_STATUS.SPAM); // status is admin-facing
   });
 
-  it('detects a duplicate of an earlier submission', async () => {
+  it('detects a duplicate when email+message+ip match (§50)', async () => {
+    const body = {
+      name: 'Dupe',
+      email: 'dupe@example.com',
+      subject: 'Website contact form',
+      message: 'The exact same message, long enough to store.',
+      userAgent: UA,
+      ip: '203.0.113.5',
+    };
+    await persistContact(body);
+    const second = await persistContact(body);
+    expect(second.isDuplicate).toBe(true);
+  });
+
+  it('does not flag a different message as a duplicate even with the same email (§50)', async () => {
     await persistContact({
       name: 'Dupe',
       email: 'dupe@example.com',
       subject: 'Website contact form',
       message: 'First message that is long enough to store.',
       userAgent: UA,
+      ip: '203.0.113.5',
     });
     const second = await persistContact({
       name: 'Dupe',
@@ -70,8 +85,9 @@ describe('persistContact', () => {
       subject: 'Website contact form',
       message: 'Second message that is also long enough to store.',
       userAgent: UA,
+      ip: '203.0.113.5',
     });
-    expect(second.isDuplicate).toBe(true);
+    expect(second.isDuplicate).toBe(false);
   });
 
   it('bumps the daily spam counter for spam submissions', async () => {

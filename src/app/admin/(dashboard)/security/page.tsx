@@ -4,15 +4,7 @@ import { HealthBadge } from '@/components/admin/StatusBadge';
 import DonutChart from '@/components/admin/DonutChart';
 import { getStore } from '@/lib/db';
 import { formatNumber, SECURITY_TYPE_LABELS } from '@/lib/utils/fa';
-
-const TYPE_COLORS: Record<string, string> = {
-  SPAM_DETECTED: '#ef4444',
-  RATE_LIMIT_TRIGGERED: '#f59e0b',
-  INVALID_PAYLOAD: '#8b5cf6',
-  SUSPICIOUS_REQUEST: '#f97316',
-  BLOCKED_REQUEST: '#dc2626',
-  AUTH_FAILURE: '#3b82f6',
-};
+import { SECURITY_COLORS } from '@/lib/utils/chartTheme';
 
 export const metadata = { title: 'امنیت' };
 
@@ -57,7 +49,7 @@ export default async function SecurityPage() {
                 data={Object.entries(counts).map(([key, value]) => ({
                   key: SECURITY_TYPE_LABELS[key] ?? key,
                   value,
-                  color: TYPE_COLORS[key] ?? '#64748b',
+                  color: SECURITY_COLORS[key] ?? '#64748b',
                 }))}
                 centerValue={formatNumber(total)}
                 centerLabel="رویداد"
@@ -69,7 +61,7 @@ export default async function SecurityPage() {
                 <div className="space-y-2">
                   {events.map((e) => (
                     <div key={e.id} className="flex items-start gap-3 rounded-lg border border-slate-800/60 bg-slate-900/40 p-3">
-                      <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: TYPE_COLORS[e.type] ?? '#64748b' }} />
+                      <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: SECURITY_COLORS[e.type] ?? '#64748b' }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold text-slate-200">{SECURITY_TYPE_LABELS[e.type] ?? e.type}</p>

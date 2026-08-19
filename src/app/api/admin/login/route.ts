@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (await isRateLimited(ip)) {
+  if (await isRateLimited(ip, 'login')) {
     await logSecurityEvent({ type: SECURITY_EVENT.RATE_LIMIT_TRIGGERED, ip, path: '/api/admin/login', reason: 'login rate limit' });
     return NextResponse.json(
       { ok: false, error: 'تعداد تلاش‌ها بیش از حد مجاز است. بعداً دوباره تلاش کنید.' },

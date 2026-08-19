@@ -211,17 +211,60 @@ describe('visitor deduplication across days', () => {
   it('counts a returning visitor correctly when their first event predates the range', async () => {
     resetStoreForTests();
     const then = Date.now() - 3 * DAY_MS;
-    await track({ eventName: 'PAGE_VIEW', visitorId: 'returning', timestamp: then });
+    // Seed the visitor on a previous day directly (buildEvent always uses Date.now()).
+    await getStore().trackEvent({
+      event: {
+        eventId: crypto.randomUUID(),
+        eventName: 'PAGE_VIEW',
+        timestamp: then,
+        visitorId: 'returning',
+        sessionId: 'sess-returning',
+        context: { path: '/', referrer: null },
+      },
+      userAgent: UA,
+    });
 
     // New event today as the same visitor.
     await track({ eventName: 'PAGE_VIEW', visitorId: 'returning', path: '/today' });
 
     const data = await getOverview(rangeFor());
     expect(data.metrics.visitors).toBe(1);
-    // The visitor already existed in the store, so today's event is "returning".
+    // The visitor existed before the range, so the in-range count is "returning".
     expect(data.metrics.returningVisitors).toBe(1);
     const dm = await getStore().getDailyMetrics([dateKey(Date.now())]);
     expect(dm[0]?.visitors).toBe(1);
+  });
+
+  it('counts a visitor once across a multi-day range (unique in range, §11)', async () => {
+    const now = Date.now();
+    const today = startOfDayUtc(now);
+    const yesterday = today - DAY_MS;
+    await track({
+      eventName: 'PAGE_VIEW',
+      visitorId: 'multi',
+      sessionId: 'sess-a',
+      timestamp: yesterday,
+      path: '/',
+    });
+    await track({
+      eventName: 'PAGE_VIEW',
+      visitorId: 'multi',
+      sessionId: 'sess-b',
+      timestamp: now,
+      path: '/',
+    });
+
+    const data = await getOverview({
+      from: yesterday,
+      to: today + DAY_MS - 1,
+      fromKey: dateKey(yesterday),
+      toKey: dateKey(now),
+      days: 2,
+    });
+    // The same visitor on two days must be counted once, not twice.
+    expect(data.metrics.visitors).toBe(1);
+    // Two distinct sessions started inside the window.
+    expect(data.metrics.sessions).toBe(2);
   });
 });
 
